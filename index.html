@@ -165,6 +165,84 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://annen-stack.github.io/2020/01/26/%E5%9F%BA%E4%BA%8Ekeras%E7%9A%84LSTM%E5%A4%9A%E5%8F%98%E9%87%8F%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97%E9%A2%84%E6%B5%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ah">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="anne's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/01/26/%E5%9F%BA%E4%BA%8Ekeras%E7%9A%84LSTM%E5%A4%9A%E5%8F%98%E9%87%8F%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97%E9%A2%84%E6%B5%8B/" class="post-title-link" itemprop="url">基于keras的LSTM多变量时间序列预测</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-01-26 15:29:28 / 修改时间：15:30:01" itemprop="dateCreated datePublished" datetime="2020-01-26T15:29:28+08:00">2020-01-26</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>利用深度学习库keras搭建LSTM模型来处理多个变量的时间序列预测问题</p>
+<h5 id="1-如何将原始数据转化为适合处理时序预测问题的数据格式"><a href="#1-如何将原始数据转化为适合处理时序预测问题的数据格式" class="headerlink" title="1.如何将原始数据转化为适合处理时序预测问题的数据格式"></a>1.如何将原始数据转化为适合处理时序预测问题的数据格式</h5><h5 id="2-如何准备数据并搭建LSTM来处理时序预测问题"><a href="#2-如何准备数据并搭建LSTM来处理时序预测问题" class="headerlink" title="2.如何准备数据并搭建LSTM来处理时序预测问题"></a>2.如何准备数据并搭建LSTM来处理时序预测问题</h5><h5 id="3-如何利用模型预测"><a href="#3-如何利用模型预测" class="headerlink" title="3.如何利用模型预测"></a>3.如何利用模型预测</h5><h3 id="1-空气污染预测"><a href="#1-空气污染预测" class="headerlink" title="1.空气污染预测"></a>1.空气污染预测</h3><p>数据集包括行数、日期（年；月；日；小时）、PM2.5浓度、露点、温度、大气压、风向、风速、累计小时雪景、累计小时鱼量</p>
+<h3 id="2-数据处理"><a href="#2-数据处理" class="headerlink" title="2.数据处理"></a>2.数据处理</h3><p>粗略的观察数据集，需要删除最开始的24小时的PM2.5,对于其他时刻少量的缺省值利用pandas中的fillna填充；同时需要整合日期数据，使其作为pandas中的索引。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">from pandas import read_csv</span><br><span class="line">from datetime import datetime</span><br><span class="line"># load data</span><br><span class="line">def parse(x):</span><br><span class="line">    return datetime.strptime(x, &#39;%Y %m %d %H&#39;)</span><br><span class="line">dataset &#x3D; read_csv(&#39;raw.csv&#39;,  parse_dates &#x3D; [[&#39;year&#39;, &#39;month&#39;, &#39;day&#39;, &#39;hour&#39;]], index_col&#x3D;0, date_parser&#x3D;parse)</span><br><span class="line">dataset.drop(&#39;No&#39;, axis&#x3D;1, inplace&#x3D;True)</span><br><span class="line"># manually specify column names</span><br><span class="line">dataset.columns &#x3D; [&#39;pollution&#39;, &#39;dew&#39;, &#39;temp&#39;, &#39;press&#39;, &#39;wnd_dir&#39;, &#39;wnd_spd&#39;, &#39;snow&#39;, &#39;rain&#39;]</span><br><span class="line">dataset.index.name &#x3D; &#39;date&#39;</span><br><span class="line"># mark all NA values with 0</span><br><span class="line">dataset[&#39;pollution&#39;].fillna(0, inplace&#x3D;True)</span><br><span class="line"># drop the first 24 hours</span><br><span class="line">dataset &#x3D; dataset[24:]</span><br><span class="line"># summarize first 5 rows</span><br><span class="line">print(dataset.head(5))</span><br><span class="line"># save to file</span><br><span class="line">dataset.to_csv(&#39;pollution.csv&#39;)</span><br></pre></td></tr></table></figure>
+<p>将参数绘制图像</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">from pandas import read_csv</span><br><span class="line">from matplotlib import pyplot</span><br><span class="line"># load dataset</span><br><span class="line">dataset &#x3D; read_csv(&#39;pollution.csv&#39;, header&#x3D;0, index_col&#x3D;0)</span><br><span class="line">values &#x3D; dataset.values</span><br><span class="line"># specify columns to plot</span><br><span class="line">groups &#x3D; [0, 1, 2, 3, 5, 6, 7]</span><br><span class="line">i &#x3D; 1</span><br><span class="line"># plot each column</span><br><span class="line">pyplot.figure()</span><br><span class="line">for group in groups:</span><br><span class="line">    pyplot.subplot(len(groups), 1, i)</span><br><span class="line">    pyplot.plot(values[:, group])</span><br><span class="line">    pyplot.title(dataset.columns[group], y&#x3D;0.5, loc&#x3D;&#39;right&#39;)</span><br><span class="line">    i +&#x3D; 1</span><br><span class="line">pyplot.show()</span><br></pre></td></tr></table></figure>
+<h3 id="3-多变量LSTM预测模型"><a href="#3-多变量LSTM预测模型" class="headerlink" title="3.多变量LSTM预测模型"></a>3.多变量LSTM预测模型</h3><p>　下面代码中首先加载“pollution.csv”文件，并利用sklearn的预处理模块对类别特征“风向”进行编码，当然也可以对该特征进行one-hot编码。<br>　　接着对所有的特征进行归一化处理，然后将数据集转化为有监督学习问题，同时将需要预测的当前时刻（t）的天气条件特征移除，完整代码如下：
+　　</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"># convert series to supervised learning</span><br><span class="line">def series_to_supervised(data, n_in&#x3D;1, n_out&#x3D;1, dropnan&#x3D;True):</span><br><span class="line">    n_vars &#x3D; 1 if type(data) is list else data.shape[1]</span><br><span class="line">    df &#x3D; DataFrame(data)</span><br><span class="line">    cols, names &#x3D; list(), list()</span><br><span class="line">    # input sequence (t-n, ... t-1)</span><br><span class="line">    for i in range(n_in, 0, -1):</span><br><span class="line">        cols.append(df.shift(i))</span><br><span class="line">        names +&#x3D; [(&#39;var%d(t-%d)&#39; % (j+1, i)) for j in range(n_vars)]</span><br><span class="line">    # forecast sequence (t, t+1, ... t+n)</span><br><span class="line">    for i in range(0, n_out):</span><br><span class="line">        cols.append(df.shift(-i))</span><br><span class="line">        if i &#x3D;&#x3D; 0:</span><br><span class="line">            names +&#x3D; [(&#39;var%d(t)&#39; % (j+1)) for j in range(n_vars)]</span><br><span class="line">        else:</span><br><span class="line">            names +&#x3D; [(&#39;var%d(t+%d)&#39; % (j+1, i)) for j in range(n_vars)]</span><br><span class="line">    # put it all together</span><br><span class="line">    agg &#x3D; concat(cols, axis&#x3D;1)</span><br><span class="line">    agg.columns &#x3D; names</span><br><span class="line">    # drop rows with NaN values</span><br><span class="line">    if dropnan:</span><br><span class="line">        agg.dropna(inplace&#x3D;True)</span><br><span class="line">    return agg</span><br><span class="line"></span><br><span class="line"># load dataset</span><br><span class="line">dataset &#x3D; read_csv(&#39;pollution.csv&#39;, header&#x3D;0, index_col&#x3D;0)</span><br><span class="line">values &#x3D; dataset.values</span><br><span class="line"># integer encode direction</span><br><span class="line">encoder &#x3D; LabelEncoder()</span><br><span class="line">values[:,4] &#x3D; encoder.fit_transform(values[:,4])</span><br><span class="line"># ensure all data is float</span><br><span class="line">values &#x3D; values.astype(&#39;float32&#39;)</span><br><span class="line"># normalize features</span><br><span class="line">scaler &#x3D; MinMaxScaler(feature_range&#x3D;(0, 1))</span><br><span class="line">scaled &#x3D; scaler.fit_transform(values)</span><br><span class="line"># frame as supervised learning</span><br><span class="line">reframed &#x3D; series_to_supervised(scaled, 1, 1)</span><br><span class="line"># drop columns we don&#39;t want to predict</span><br><span class="line">reframed.drop(reframed.columns[[9,10,11,12,13,14,15]], axis&#x3D;1, inplace&#x3D;True)</span><br><span class="line">print(reframed.head())</span><br></pre></td></tr></table></figure>
+<p>构造模型</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"># split into train and test sets</span><br><span class="line">values &#x3D; reframed.values</span><br><span class="line">n_train_hours &#x3D; 365 * 24</span><br><span class="line">train &#x3D; values[:n_train_hours, :]</span><br><span class="line">test &#x3D; values[n_train_hours:, :]</span><br><span class="line"># split into input and outputs</span><br><span class="line">train_X, train_y &#x3D; train[:, :-1], train[:, -1]</span><br><span class="line">test_X, test_y &#x3D; test[:, :-1], test[:, -1]</span><br><span class="line"># reshape input to be 3D [samples, timesteps, features]</span><br><span class="line">train_X &#x3D; train_X.reshape((train_X.shape[0], 1, train_X.shape[1]))</span><br><span class="line">test_X &#x3D; test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))</span><br><span class="line">print(train_X.shape, train_y.shape, test_X.shape, test_y.shape)</span><br></pre></td></tr></table></figure>
+<p>现在可以搭建LSTM模型了。 </p>
+<p>　　LSTM模型中，隐藏层有50个神经元，输出层1个神经元（回归问题），输入变量是一个时间步（t-1）的特征，损失函数采用Mean Absolute Error(MAE)，优化算法采用Adam，模型采用50个epochs并且每个batch的大小为72。<br>　　<br>　　最后，在fit()函数中设置validation_data参数，记录训练集和测试集的损失，并在完成训练和测试后绘制损失图。
+　　</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"># design network</span><br><span class="line">model &#x3D; Sequential()</span><br><span class="line">model.add(LSTM(50, input_shape&#x3D;(train_X.shape[1], train_X.shape[2])))</span><br><span class="line">model.add(Dense(1))</span><br><span class="line">model.compile(loss&#x3D;&#39;mae&#39;, optimizer&#x3D;&#39;adam&#39;)</span><br><span class="line"># fit network</span><br><span class="line">history &#x3D; model.fit(train_X, train_y, epochs&#x3D;50, batch_size&#x3D;72, validation_data&#x3D;(test_X, test_y), verbose&#x3D;2, shuffle&#x3D;False)</span><br><span class="line"># plot history</span><br><span class="line">pyplot.plot(history.history[&#39;loss&#39;], label&#x3D;&#39;train&#39;)</span><br><span class="line">pyplot.plot(history.history[&#39;val_loss&#39;], label&#x3D;&#39;test&#39;)</span><br><span class="line">pyplot.legend()</span><br><span class="line">pyplot.show()</span><br><span class="line"></span><br><span class="line"># design network</span><br><span class="line">model &#x3D; Sequential()</span><br><span class="line">model.add(LSTM(50, input_shape&#x3D;(train_X.shape[1], train_X.shape[2])))</span><br><span class="line">model.add(Dense(1))</span><br><span class="line">model.compile(loss&#x3D;&#39;mae&#39;, optimizer&#x3D;&#39;adam&#39;)</span><br><span class="line"># fit network</span><br><span class="line">history &#x3D; model.fit(train_X, train_y, epochs&#x3D;50, batch_size&#x3D;72, validation_data&#x3D;(test_X, test_y), verbose&#x3D;2, shuffle&#x3D;False)</span><br><span class="line"># plot history</span><br><span class="line">pyplot.plot(history.history[&#39;loss&#39;], label&#x3D;&#39;train&#39;)</span><br><span class="line">pyplot.plot(history.history[&#39;val_loss&#39;], label&#x3D;&#39;test&#39;)</span><br><span class="line">pyplot.legend()</span><br><span class="line">pyplot.show()</span><br></pre></td></tr></table></figure>
+<p>模型评估</p>
+<p>　接下里我们对模型效果进行评估。<br>　<br>　　值得注意的是：需要将预测结果和部分测试集数据组合然后进行比例反转，同时也需要将测试集上的预期值也进行比例转换。 </p>
+<p>　　至于在这里为什么进行比例反转，是因为我们将原始数据进行了预处理（连同输出值y），此时的误差损失计算是在处理之后的数据上进行的，为了计算在原始比例上的误差需要将数据进行转化。同时笔者有个小Tips：就是反转时的矩阵大小一定要和原来的大小（shape）完全相同，否则就会报错。<br>　　<br>　通过以上处理之后，再结合RMSE（均方根误差）计算损失。
+　</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># make a prediction</span><br><span class="line">yhat &#x3D; model.predict(test_X)</span><br><span class="line">test_X &#x3D; test_X.reshape((test_X.shape[0], test_X.shape[2]))</span><br><span class="line"># invert scaling for forecast</span><br><span class="line">inv_yhat &#x3D; concatenate((yhat, test_X[:, 1:]), axis&#x3D;1)</span><br><span class="line">inv_yhat &#x3D; scaler.inverse_transform(inv_yhat)</span><br><span class="line">inv_yhat &#x3D; inv_yhat[:,0]</span><br><span class="line"># invert scaling for actual</span><br><span class="line">test_y &#x3D; test_y.reshape((len(test_y), 1))</span><br><span class="line">inv_y &#x3D; concatenate((test_y, test_X[:, 1:]), axis&#x3D;1)</span><br><span class="line">inv_y &#x3D; scaler.inverse_transform(inv_y)</span><br><span class="line">inv_y &#x3D; inv_y[:,0]</span><br><span class="line"># calculate RMSE</span><br><span class="line">rmse &#x3D; sqrt(mean_squared_error(inv_y, inv_yhat))</span><br><span class="line">print(&#39;Test RMSE: %.3f&#39; % rmse)</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://annen-stack.github.io/2020/01/26/%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%B5%8B%E8%AF%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -581,7 +659,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-count">4</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
