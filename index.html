@@ -165,6 +165,113 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://annen-stack.github.io/2020/02/04/%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86%E9%83%A8%E5%88%86%E4%BB%A3%E7%A0%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ah">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="anne's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/02/04/%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86%E9%83%A8%E5%88%86%E4%BB%A3%E7%A0%81/" class="post-title-link" itemprop="url">数据预处理部分代码</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-02-04 17:46:04 / 修改时间：17:46:32" itemprop="dateCreated datePublished" datetime="2020-02-04T17:46:04+08:00">2020-02-04</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="1-文本格式数据读写"><a href="#1-文本格式数据读写" class="headerlink" title="1.文本格式数据读写"></a>1.文本格式数据读写</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df&#x3D;pd.read.csv(&#39;examples&#x2F;ex1.csv&#39;)</span><br></pre></td></tr></table></figure>
+<h5 id="添加表头"><a href="#添加表头" class="headerlink" title="添加表头"></a>添加表头</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df&#x3D;pd.read.csv(&#39;examples&#x2F;ex1.csv&#39;，names&#x3D;[&#39;a&#39;,&#39;b&#39;],index_col&#x3D;&#39;message&#39;)</span><br></pre></td></tr></table></figure>
+<h5 id="传入一个分层索引"><a href="#传入一个分层索引" class="headerlink" title="传入一个分层索引"></a>传入一个分层索引</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df&#x3D;pd.read.csv(&#39;examples&#x2F;ex1.csv&#39;，index_col&#x3D;[&#39;key1&#39;,&#39;key2&#39;])</span><br></pre></td></tr></table></figure>
+<p>当字段是以多种不同数量的空格符分开时，可以传入正则表达式作为分隔符</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df&#x3D;pd.read.csv(&#39;examples&#x2F;ex1.csv&#39;，seq&#x3D;&#39;\s+&#39;)</span><br></pre></td></tr></table></figure>
+<p>使用skiprows来跳过0，2，3行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df&#x3D;pd.read.csv(&#39;examples&#x2F;ex1.csv&#39;，skiprows&#x3D;[0,2,3])</span><br></pre></td></tr></table></figure>
+<h5 id="分块读入文本文件"><a href="#分块读入文本文件" class="headerlink" title="分块读入文本文件"></a>分块读入文本文件</h5><p>在尝试大文件前，先进行设置使之更为紧凑</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pd.options.display.max_rows&#x3D;10</span><br></pre></td></tr></table></figure>
+<p>分块读取文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">chunker&#x3D;df&#x3D;pd.read.csv(&#39;examples&#x2F;ex1.csv&#39;，chunksize&#x3D;1000)</span><br><span class="line">tot&#x3D;pd.Series([])</span><br><span class="line">for piece in chunker:</span><br><span class="line">     tot&#x3D;tot.add(piece[&#39;key&#39;].value_counts(),fill_value&#x3D;0)</span><br><span class="line">tot&#x3D;tot.sort_values(ascending&#x3D;False)</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-数据清洗与准备"><a href="#2-数据清洗与准备" class="headerlink" title="2.数据清洗与准备"></a>2.数据清洗与准备</h3><h4 id="2-1处理缺失值"><a href="#2-1处理缺失值" class="headerlink" title="2.1处理缺失值"></a>2.1处理缺失值</h4><h5 id="2-1-1过滤缺失值"><a href="#2-1-1过滤缺失值" class="headerlink" title="2.1.1过滤缺失值"></a>2.1.1过滤缺失值</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">from numpy import nan as NA</span><br><span class="line">data &#x3D; pd.Series([1,NA,3.5,NA,7])</span><br><span class="line">data.dropna()  #过滤掉缺失值</span><br></pre></td></tr></table></figure>
+<p>data.dropna()会删掉包括缺失值的行</p>
+<p>data.dropna(how=’all’) 仅会删除所有制均为NA的行</p>
+<p>如果要删除列，则data.dropna(axis=1,how=’all’)</p>
+<p>对矩阵进行重新赋值，利用iloc</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">df&#x3D;pd.DataFrame(np.random.randn(7,3))</span><br><span class="line">df.iloc[:4,1]&#x3D;NA  #前四行，第二列</span><br><span class="line">df.dropna(thresh&#x3D;2)</span><br></pre></td></tr></table></figure>
+<h5 id="2-1-2补全缺失值"><a href="#2-1-2补全缺失值" class="headerlink" title="2.1.2补全缺失值"></a>2.1.2补全缺失值</h5><p>主要使用fillna方法来补全缺失值，可以使用一个常数来代替缺失值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df.fillna(0)</span><br></pre></td></tr></table></figure>
+<p>在调用fillna时，使用字典，可以为不同的列设置不同的填充值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df.fillna(&#123;1:0.5,2:0&#125;)</span><br></pre></td></tr></table></figure>
+<p>利用均值来填充</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df.fillna(df.mean())</span><br></pre></td></tr></table></figure>
+<h4 id="2-2数据转换"><a href="#2-2数据转换" class="headerlink" title="2.2数据转换"></a>2.2数据转换</h4><p>替代值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">data&#x3D;pd.Series([1.,-999.,2.,-999.,-1000.,3.])</span><br><span class="line">data.replace(-999,np.nan)</span><br><span class="line">data.replace([-999,-1000],np.nan)</span><br><span class="line">#将不同的值替换成不同的值</span><br><span class="line">data.replace([-999,-1000],[np.nan,0])</span><br></pre></td></tr></table></figure>
+<p>离散化和分箱</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">age&#x3D;[...]</span><br><span class="line">bin&#x3D;[1,2,3,4,5,6]</span><br><span class="line">cats&#x3D;pd.cut(age,bin)</span><br></pre></td></tr></table></figure>
+<p>检测和过滤异常值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">data&#x3D;pd.DataFrame(np.random.randn(1000,4))</span><br><span class="line">data.describe()</span><br></pre></td></tr></table></figure>
+<p>假设要找出某一列中绝对值大于三的值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">col&#x3D;data[2]</span><br><span class="line">col[np.abs(col)&gt;3]</span><br></pre></td></tr></table></figure>
+<p>要选出所有值绝对值大于三，可以使用any方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">data[(np.abs(data)&gt;3).any(1)]</span><br></pre></td></tr></table></figure>
+<p>下面代码限制了-3到3之间的数值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">data[np.abs(data)&gt;3]&#x3D;np.sign(data)*3</span><br><span class="line">+1&#x2F;-1</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://annen-stack.github.io/2020/02/04/%E9%81%A5%E6%B5%8B%E6%95%B0%E6%8D%AE%E4%B9%8B%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86%E6%96%B9%E6%B3%95%E6%95%B4%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -809,7 +916,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-count">6</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
