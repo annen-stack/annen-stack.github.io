@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://annen-stack.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="数据清洗主要分为三步：1.重复值处理——删除（有几个相同就删除还是全部得相同）2.缺失值处理——删除，填充（均值，众数，中位数，前后相邻值），插值（拉格朗日插值，牛顿插值）3.异常值处理——describe进行描述性分析+散点图+箱型图定位异常值，处理方法：删除，视为缺失值。   数据输入： 12detail &#x3D; pd.read_csv(&quot;D:\\codes\\python\">
+<meta property="og:type" content="article">
+<meta property="og:title" content="遥测数据之数据预处理方法整理">
+<meta property="og:url" content="https://annen-stack.github.io/2020/02/04/%E9%81%A5%E6%B5%8B%E6%95%B0%E6%8D%AE%E4%B9%8B%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86%E6%96%B9%E6%B3%95%E6%95%B4%E7%90%86/index.html">
+<meta property="og:site_name" content="anne&#39;s blog">
+<meta property="og:description" content="数据清洗主要分为三步：1.重复值处理——删除（有几个相同就删除还是全部得相同）2.缺失值处理——删除，填充（均值，众数，中位数，前后相邻值），插值（拉格朗日插值，牛顿插值）3.异常值处理——describe进行描述性分析+散点图+箱型图定位异常值，处理方法：删除，视为缺失值。   数据输入： 12detail &#x3D; pd.read_csv(&quot;D:\\codes\\python\">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-02-04T09:40:29.000Z">
+<meta property="article:modified_time" content="2020-02-04T09:41:08.027Z">
+<meta property="article:author" content="ah">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://annen-stack.github.io/2020/02/04/%E9%81%A5%E6%B5%8B%E6%95%B0%E6%8D%AE%E4%B9%8B%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86%E6%96%B9%E6%B3%95%E6%95%B4%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>遥测数据之数据预处理方法整理 | anne's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">anne's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://annen-stack.github.io/2020/02/04/%E9%81%A5%E6%B5%8B%E6%95%B0%E6%8D%AE%E4%B9%8B%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86%E6%96%B9%E6%B3%95%E6%95%B4%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ah">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="anne's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          遥测数据之数据预处理方法整理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-02-04 17:40:29 / 修改时间：17:41:08" itemprop="dateCreated datePublished" datetime="2020-02-04T17:40:29+08:00">2020-02-04</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>数据清洗主要分为三步：<br>1.重复值处理——删除（有几个相同就删除还是全部得相同）<br>2.缺失值处理——删除，填充（均值，众数，中位数，前后相邻值），插值（拉格朗日插值，牛顿插值）<br>3.异常值处理——describe进行描述性分析+散点图+箱型图定位异常值，处理方法：删除，视为缺失值。</p>
+</blockquote>
+<p> 数据输入：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">detail &#x3D; pd.read_csv(&quot;D:\\codes\\python\\data\\detail.csv&quot;,index_col&#x3D;0,encoding&#x3D;&#39;gbk&#39;)</span><br><span class="line">print(&#39;这个么去重前的样本形状：&#39;,detail.shape)</span><br></pre></td></tr></table></figure>
+
+<p>去重：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">detail.drop_duplicates(inplace&#x3D;True)</span><br></pre></td></tr></table></figure>
+
+<h3 id="一、数据清理"><a href="#一、数据清理" class="headerlink" title="一、数据清理"></a>一、数据清理</h3><p>数据清理主要通过填补缺失值、光滑噪声数据、平滑或删除离群点，并解决数据的不一致性来清理数据。</p>
+<h4 id="1-缺失值处理"><a href="#1-缺失值处理" class="headerlink" title="1.缺失值处理"></a>1.缺失值处理</h4><ul>
+<li>删除变量</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">from numpy import nan as NA</span><br><span class="line">data &#x3D; pd.Series([1,NA,3.5,NA,7])</span><br><span class="line">data.dropna()  #过滤掉缺失值</span><br></pre></td></tr></table></figure>
+<p>data.dropna()会删掉包括缺失值的行</p>
+<p>data.dropna(how=’all’) 仅会删除所有制均为NA的行</p>
+<p>如果要删除列，则data.dropna(axis=1,how=’all’)</p>
+<p>对矩阵进行重新赋值，利用iloc</p>
+<ul>
+<li>均值填充</li>
+</ul>
+<p>主要使用fillna方法来补全缺失值，可以使用一个常数来代替缺失值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df.fillna(0)</span><br></pre></td></tr></table></figure>
+<p>在调用fillna时，使用字典，可以为不同的列设置不同的填充值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df.fillna(&#123;1:0.5,2:0&#125;)</span><br></pre></td></tr></table></figure>
+<p>利用均值来填充</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df.fillna(df.mean())</span><br></pre></td></tr></table></figure>
+<ul>
+<li>哑变量填充<br>：变量为离散值</li>
+<li>插值法补充</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">from scipy.interpolate import interp1d</span><br><span class="line">import numpy as np</span><br><span class="line">x&#x3D;np.array([1,2,3,4,5,8,9])</span><br><span class="line">y1&#x3D;np.array([2,8,18,32,50,128,162]) ##y1&#x3D;2*x^2</span><br><span class="line">y2&#x3D;np.array([3,5,7,9,11,17,19])  ##y2&#x3D;2*x+1</span><br><span class="line"></span><br><span class="line"># 线性插补</span><br><span class="line">linearinsvalue1&#x3D;interp1d(x,y1,kind&#x3D;&#39;linear&#39;)</span><br><span class="line">linearinsvalue2&#x3D;interp1d(x,y2,kind&#x3D;&#39;linear&#39;)</span><br><span class="line">print(linearinsvalue1([7,11]),linearinsvalue2([7,11]))</span><br><span class="line"></span><br><span class="line">out:[102. 246.] [15. 23.]</span><br><span class="line"></span><br><span class="line"># 拉格朗日插补</span><br><span class="line">from scipy.interpolate import lagrange</span><br><span class="line">largeinsvalue1&#x3D;lagrange(x,y1)</span><br><span class="line">largeinsvalue2&#x3D;lagrange(x,y2)</span><br><span class="line">print(largeinsvalue1([7,11]),largeinsvalue2([7,11]))</span><br><span class="line">out:[ 98. 242.] [15. 23.]</span><br><span class="line"></span><br><span class="line">#样条插补</span><br><span class="line">from scipy.interpolate import spline</span><br><span class="line">splineinsvalue1&#x3D;spline(x,y1,xnew&#x3D;np.array([7,11]))</span><br><span class="line">splineinsvalue2&#x3D;spline(x,y2,xnew&#x3D;np.array([7,11]))</span><br><span class="line">print(splineinsvalue1,splineinsvalue2)</span><br><span class="line">out:[ 98. 242.] [15. 23.]</span><br></pre></td></tr></table></figure>
+<h4 id="2-离群点处理"><a href="#2-离群点处理" class="headerlink" title="2.离群点处理"></a>2.离群点处理</h4><p>异常值为处于特定分布区域或范围外的数据通常被定义为异常或噪声。</p>
+<ul>
+<li>简单统计分析：根据箱线图、各分位点判断是否出现异常<br>例如pd.describe可以迅速发现异常值</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">data.describe()</span><br></pre></td></tr></table></figure>
+<p>可以画散点图观察</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">from matplotlib import pyplot as plt</span><br><span class="line">plt.scatter(data[&quot;数量&quot;],data[&quot;销售量&quot;])</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<p>基于箱型图观察：四分位距(IQR)就是上四分位与下四分位的差值。而我们通过IQR的1.5倍为标准，规定：超过上四分位+1.5倍IQR距离，或者下四分位-1.5倍IQR距离的点为异常值。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">plt.subplot(1,2,1)</span><br><span class="line">plt.boxplot(data[&quot;数量&quot;])</span><br><span class="line">plt.subplot(1,2,2)</span><br><span class="line">plt.boxplot(data[&quot; 销售金额 &quot;])</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h5 id="异常值处理："><a href="#异常值处理：" class="headerlink" title="异常值处理："></a>异常值处理：</h5><p>1.删除—-先将异常值替换为na，然后用dropna（）删除</p>
+<p>2.视为缺失值—-先将异常值替换为na,然后用缺失值处理方法处理（填充、插值等）</p>
+<ul>
+<li>比如用箱形图的办法，超过了上四分位1.5倍四分位距或下四分位1.5倍距离都算异常值，用中位数填充</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">a &#x3D; data[&quot;数量&quot;].mean()+data[&quot;数量&quot;].std()*4</span><br><span class="line">b &#x3D; data[&quot;数量&quot;].mean()-data[&quot;数量&quot;].std()*4</span><br><span class="line">c &#x3D; data[&quot;数量&quot;]</span><br><span class="line">c[(c&gt;&#x3D;a)|(c&lt;&#x3D;b)]&#x3D;np.nan</span><br><span class="line">c.fillna(c.median(),inplace&#x3D;True)</span><br><span class="line">print(c.describe())</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>基于绝对离差中位数</li>
+</ul>
+<p>绝对中位差：如果一个点大于或小于3倍的绝对中位差，那它就被是视为异常点。</p>
+<ol>
+<li>计算所有观察点的中位数median(x)</li>
+<li>计算每个观察点与中位数的绝对偏差值abs(x-median(x))</li>
+<li>计算2中的绝对偏差值的中位数，即MAD=median(abs(x-median(x)));</li>
+<li>将2得到的值除以3的值，得到一组基于MAD的所有观察点的离中心的距离值abs(x-median(x))/MAD</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">import matplotlib.pyplot as plt</span><br><span class="line">import numpy as np</span><br><span class="line">from scipy.stats import norm</span><br><span class="line">x&#x3D;np.random.random(100)</span><br><span class="line">number&#x3D;50</span><br><span class="line">x&#x3D;np.r_[x,-60,80,40,100,-100]#在后面添上，相当于padans中merge</span><br><span class="line"></span><br><span class="line">plt.figure()</span><br><span class="line">plt.subplot(211)</span><br><span class="line">plt.hist(x,number)</span><br><span class="line">plt.xlabel(&#39;raw&#39;) #没消除异常的时候</span><br><span class="line"># plt.show()</span><br><span class="line"></span><br><span class="line">def c_except(x,thresh&#x3D;3.5):</span><br><span class="line">    &#39;&#39;&#39;</span><br><span class="line">    使用绝对中位差消除异常</span><br><span class="line">    :return:</span><br><span class="line">    &#39;&#39;&#39;</span><br><span class="line">    if len(x)&lt;&#x3D;1:</span><br><span class="line">        return</span><br><span class="line">    me&#x3D;np.median(x)</span><br><span class="line">    abs&#x3D;np.absolute(x-me)</span><br><span class="line">    abs_me&#x3D;np.median(abs)</span><br><span class="line"></span><br><span class="line">    score&#x3D;norm.ppf(0.75)*abs&#x2F;abs_me</span><br><span class="line">    return score&lt;thresh</span><br><span class="line"></span><br><span class="line">#异常消除后</span><br><span class="line">x_late&#x3D;x[c_except(x)]</span><br><span class="line">plt.subplot(212)</span><br><span class="line">plt.hist(x_late,number)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<p>利用平均值或中位数来代替异常点</p>
+<h4 id="3-噪声处理-高频去噪"><a href="#3-噪声处理-高频去噪" class="headerlink" title="3.噪声处理(高频去噪)"></a>3.噪声处理(高频去噪)</h4><p>对数据进行分箱操作，然后用每个箱的平均值..来代替箱中的所有数，起到平滑数据的作用。另一种做法是，建立该变量与预测变量的回归模型，根据回归系数和预测变量，反解出自变量的近似值。</p>
+<h3 id="二、数据标准化"><a href="#二、数据标准化" class="headerlink" title="二、数据标准化"></a>二、数据标准化</h3><ul>
+<li>最大-最小规范化：将数据映射到[0,1]区间</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">def minmaxscale(data):</span><br><span class="line">    data&#x3D;(data-data.min())&#x2F;(data.max()-data.min())</span><br><span class="line">    return data</span><br></pre></td></tr></table></figure>
+<ul>
+<li>z-score标准化</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">def standardscale(data):</span><br><span class="line">    data&#x3D;(data-data.mean())&#x2F;data.std()</span><br><span class="line">    return data</span><br></pre></td></tr></table></figure>
+<ul>
+<li>log变换<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">def decimalscale(data):</span><br><span class="line">    data&#x3D;data&#x2F;10**np.log10(data.abs().max()))</span><br><span class="line">    return data</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="三、小波变换和小波阈值法去噪"><a href="#三、小波变换和小波阈值法去噪" class="headerlink" title="三、小波变换和小波阈值法去噪"></a>三、小波变换和小波阈值法去噪</h3><p>小波变换是一种信号的时间-尺度（时间-频率）分析方法，它具有多分辨分析的特点，而且在时域两域都具有表征信号局部特征的能力，是一种窗口大小固定不变但是其形状可变的，时间窗和频率窗都可改变的时域局部化分析方法。即在低频部分具有较低的时间分辨率和较高的频率分辨率，在高频部分具有较高的时间分辨率和较低的频率分辨率，很适合于分析非平稳的信号和提取信号的局部特征，所以小波变换称为分析处理信号的显微镜。</p>
+<h4 id="小波阈值去噪："><a href="#小波阈值去噪：" class="headerlink" title="小波阈值去噪："></a>小波阈值去噪：</h4><p>在小波分析中经常使用到近似和细节，近似代表信号的高尺度，即低频信息；细节表示信号的低尺度，即高频信息。对含有噪声的信号，噪声分量的主要能力集中在小波解的细节分量中。</p>
+<p>1.小波基的选择<br>采用db小波系</p>
+<p>2.分解层数的选择</p>
+<p>层数越大，则噪声和信号表现的不同特征越明显，越有利于二者的分离。但另一方面，参数越多，重构的信号失真也越大，在一定程度上又会影响最终去噪的效果。</p>
+<p>通常小波分解的频段范围与采样频率有关。若N层分解，则各个频段大小为Fs/2/2^N 。例如：一个原始信号，经历的时间长度为2秒，采样了2000个点，那么做除法，可得出采样频率为1000hz，由采样定理（做除法）得该信号的最大频率为500hz，那么对该信号做3层的DWT，一阶细节的频段为250－500hz，一阶逼近的频段为小于250hz，二阶细节的频段为125－250hz，逼近的频段为小于125hz，三阶细节的频段约为62.5－125hz，逼近的频段为小于62.5hz。对于更多阶的分解也是以此类推的。</p>
+<p>3.阈值的选取</p>
+<p>目前的常见的阈值选择方法有：固定阈值估计、极值阈值估计、无偏似然估计以及启发式估计。</p>
+<p>4.阈值函数的选择</p>
+<p>确定了高斯白噪声在小波系数(域)的阈值门限之后，就需要有个阈值函数对这个含有噪声系数的小波系数进行过滤，去除高斯噪声系数，常用的阈值函数有软阈值和硬阈值方法，很多文献论文中也有在阈值函数进行一些大量的改进和优化。</p>
+<h5 id="pywavelet基于阈值的小波分解重构法去噪"><a href="#pywavelet基于阈值的小波分解重构法去噪" class="headerlink" title="pywavelet基于阈值的小波分解重构法去噪"></a>pywavelet基于阈值的小波分解重构法去噪</h5><p>小波阈值去噪的具体处理过程，选择一个小波并确定分解层数，然后将含噪信号在各尺度上进行小波分解，保留大尺度低频率下的全部小波系数；对于各尺度高分辨率下的小波系数，可以设定一个阈值，幅度低于该阈值的小波系数设为0，高于该阈值的小波系数完整保留。最后利用逆小波变换重构，恢复出有效的信号。</p>
+<p>matlab小波去噪</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">clear all;clc </span><br><span class="line">load(‘Audio_1_resample.mat’); </span><br><span class="line">s&#x3D;data_resample;   %获取要处理的信号，data_resample是在上面.mat里的一个参数 </span><br><span class="line">%整个信号的长度 </span><br><span class="line">N &#x3D; numel(s); </span><br><span class="line">%小波分解; </span><br><span class="line">[c,l]&#x3D;wavedec(s,7,’coif5’);   %小波基为coif5,分解层数为7层  </span><br><span class="line">ca11&#x3D;appcoef(c,l,’coif5’,7);    %获取低频信号 </span><br><span class="line">cd1&#x3D;detcoef(c,l,1); </span><br><span class="line">cd2&#x3D;detcoef(c,l,2);            %获取高频细节 </span><br><span class="line">cd3&#x3D;detcoef(c,l,3); </span><br><span class="line">cd4&#x3D;detcoef(c,l,4); </span><br><span class="line">cd5&#x3D;detcoef(c,l,5); </span><br><span class="line">cd6&#x3D;detcoef(c,l,6); </span><br><span class="line">cd7&#x3D;detcoef(c,l,7); </span><br><span class="line">sd1&#x3D;zeros(1,length(cd1)); </span><br><span class="line">sd2&#x3D;zeros(1,length(cd2));      %1-3层置0,4-7层用软阈值函数处理 </span><br><span class="line">sd3&#x3D;zeros(1,length(cd3)); </span><br><span class="line">sd4&#x3D;wthresh(cd4,’s’,0.014); </span><br><span class="line">sd5&#x3D;wthresh(cd5,’s’,0.014); </span><br><span class="line">sd6&#x3D;wthresh(cd6,’s’,0.014); </span><br><span class="line">sd7&#x3D;wthresh(cd7,’s’,0.014); </span><br><span class="line">c2&#x3D;[ca11,sd7,sd6,sd5,sd4,sd3,sd2,sd1]; </span><br><span class="line">s0&#x3D;waverec(c2,l,’coif5’);                 %小波重构 </span><br><span class="line">figure; </span><br><span class="line">subplot(211);plot(s);subplot(212);plot(s0);%画图</span><br></pre></td></tr></table></figure>
+
+<p><a href="https://wenku.baidu.com/view/84fe78a1284ac850ad02423c.html" target="_blank" rel="noopener">baiduwenku</a></p>
+<p><a href="https://archive.ics.uci.edu/ml/datasets/Appliances+energy+prediction" target="_blank" rel="noopener">数据来源</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">import pywt</span><br><span class="line"></span><br><span class="line">import numpy as np</span><br><span class="line"></span><br><span class="line">import pandas as pd</span><br><span class="line"></span><br><span class="line">import matplotlib  </span><br><span class="line"></span><br><span class="line">import matplotlib.pyplot as plt</span><br><span class="line"></span><br><span class="line">import math</span><br><span class="line"></span><br><span class="line">####################一些参数和函数############</span><br><span class="line"></span><br><span class="line">def sgn(num):</span><br><span class="line"></span><br><span class="line">    if(num &gt; 0.0):</span><br><span class="line"></span><br><span class="line">        return 1.0</span><br><span class="line"></span><br><span class="line">    elif(num &#x3D;&#x3D; 0.0):</span><br><span class="line"></span><br><span class="line">        return 0.0</span><br><span class="line"></span><br><span class="line">    else:</span><br><span class="line"></span><br><span class="line">        return -1.0</span><br><span class="line"></span><br><span class="line">begin &#x3D; 1</span><br><span class="line"></span><br><span class="line">end &#x3D; 1001</span><br><span class="line"></span><br><span class="line">###软硬阈值折衷法 a 参数</span><br><span class="line"></span><br><span class="line">a &#x3D; 0.5</span><br><span class="line"></span><br><span class="line">###################一些参数和函数############# </span><br><span class="line"></span><br><span class="line">       </span><br><span class="line"></span><br><span class="line">###sample###  </span><br><span class="line"></span><br><span class="line">#x &#x3D; [3, 7, 1, 1, -2, 5, 4, 6]</span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"></span><br><span class="line">#read data</span><br><span class="line"></span><br><span class="line">data &#x3D; pd.read_csv(&#39;energydata_complete.csv&#39; )</span><br><span class="line"></span><br><span class="line">#y_value为原信号</span><br><span class="line"></span><br><span class="line">##########画图################################################</span><br><span class="line"></span><br><span class="line">x1 &#x3D; range(begin, end)</span><br><span class="line"></span><br><span class="line">y_values &#x3D;  data[&#39;RH_6&#39;][begin:end]</span><br><span class="line"></span><br><span class="line">&#39;&#39;&#39;</span><br><span class="line"></span><br><span class="line">scatter() </span><br><span class="line"></span><br><span class="line">x:横坐标 y:纵坐标 s:点的尺寸</span><br><span class="line"></span><br><span class="line">&#39;&#39;&#39;</span><br><span class="line"></span><br><span class="line">#plt.scatter(x1, y_values, s&#x3D;10)</span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"></span><br><span class="line">plt.plot(x1, y_values) </span><br><span class="line"></span><br><span class="line">## 设置图表标题并给坐标轴加上标签</span><br><span class="line"></span><br><span class="line">#plt.title(&#39;plot Numbers&#39;, fontsize&#x3D;24)</span><br><span class="line"></span><br><span class="line">#plt.xlabel(&#39;xValue&#39;, fontsize&#x3D;14)</span><br><span class="line"></span><br><span class="line">#plt.ylabel(&#39;yValue&#39;, fontsize&#x3D;14)</span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"></span><br><span class="line"># 设置刻度标记的大小</span><br><span class="line"></span><br><span class="line">#plt.tick_params(axis&#x3D;&#39;both&#39;, which&#x3D;&#39;major&#39;, labelsize&#x3D;14)</span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"></span><br><span class="line"># 设置每个坐标轴的取值范围</span><br><span class="line"></span><br><span class="line">#plt.axis([0, 1000, 0, 100])</span><br><span class="line"></span><br><span class="line">plt.show()</span><br><span class="line"></span><br><span class="line">##############画图############################################</span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"></span><br><span class="line">#print(data.shape)</span><br><span class="line"></span><br><span class="line">#print(data)</span><br><span class="line"></span><br><span class="line">#print(data[&#39;RH_6&#39;])</span><br><span class="line"></span><br><span class="line">##################去噪#########################</span><br><span class="line"></span><br><span class="line">db1  &#x3D; pywt.Wavelet(&#39;db1&#39;)</span><br><span class="line"></span><br><span class="line">#[ca3, cd3, cd2, cd1] &#x3D; pywt.wavedec(x, db1)</span><br><span class="line"></span><br><span class="line">#print(ca3)</span><br><span class="line"></span><br><span class="line">#print(cd3)</span><br><span class="line"></span><br><span class="line">#print(cd2)</span><br><span class="line"></span><br><span class="line">#print(cd1)</span><br><span class="line"></span><br><span class="line">#分解为三层</span><br><span class="line"></span><br><span class="line">coeffs &#x3D; pywt.wavedec(y_values, db1, level &#x3D; 3)</span><br><span class="line"></span><br><span class="line">print(&quot;------------------len of coeffs---------------------&quot;)</span><br><span class="line"></span><br><span class="line">print(len(coeffs))</span><br><span class="line"></span><br><span class="line">#print(coeffs)</span><br><span class="line"></span><br><span class="line">recoeffs &#x3D; pywt.waverec(coeffs, db1)</span><br><span class="line"></span><br><span class="line">#print(recoeffs)</span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"></span><br><span class="line">thcoeffs &#x3D;[]</span><br><span class="line"></span><br><span class="line">for i in range(1, len(coeffs)):</span><br><span class="line"></span><br><span class="line">    tmp &#x3D; coeffs[i].copy()</span><br><span class="line"></span><br><span class="line">    Sum &#x3D; 0.0</span><br><span class="line"></span><br><span class="line">    for j in coeffs[i]:</span><br><span class="line"></span><br><span class="line">        Sum &#x3D; Sum + abs(j)</span><br><span class="line"></span><br><span class="line">    N &#x3D; len(coeffs[i])</span><br><span class="line"></span><br><span class="line">    Sum &#x3D; (1.0 &#x2F; float(N)) * Sum</span><br><span class="line"></span><br><span class="line">    sigma &#x3D; (1.0 &#x2F; 0.6745) * Sum</span><br><span class="line"></span><br><span class="line">    lamda &#x3D; sigma * math.sqrt(2.0 * math.log(float(N), math.e))</span><br><span class="line"></span><br><span class="line">    for k in range(len(tmp)):</span><br><span class="line"></span><br><span class="line">        if(abs(tmp[k]) &gt;&#x3D; lamda):</span><br><span class="line"></span><br><span class="line">            tmp[k] &#x3D; sgn(tmp[k]) * (abs(tmp[k]) - a * lamda)</span><br><span class="line"></span><br><span class="line">        else:</span><br><span class="line"></span><br><span class="line">            tmp[k] &#x3D; 0.0</span><br><span class="line"></span><br><span class="line">    thcoeffs.append(tmp)</span><br><span class="line"></span><br><span class="line">#print(thcoeffs)</span><br><span class="line"></span><br><span class="line">usecoeffs &#x3D; []</span><br><span class="line"></span><br><span class="line">usecoeffs.append(coeffs[0])</span><br><span class="line"></span><br><span class="line">usecoeffs.extend(thcoeffs)</span><br><span class="line"></span><br><span class="line">#print(usecoeffs)</span><br><span class="line"></span><br><span class="line">#recoeffs为去噪后信号</span><br><span class="line"></span><br><span class="line">recoeffs &#x3D; pywt.waverec(usecoeffs, db1)</span><br><span class="line"></span><br><span class="line">#print(recoeffs)</span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"></span><br><span class="line">##########画图################################################</span><br><span class="line"></span><br><span class="line">x1 &#x3D; range(begin, end)</span><br><span class="line"></span><br><span class="line">y_values &#x3D;  recoeffs</span><br><span class="line"></span><br><span class="line">&#39;&#39;&#39;</span><br><span class="line"></span><br><span class="line">scatter() </span><br><span class="line"></span><br><span class="line">x:横坐标 y:纵坐标 s:点的尺寸</span><br><span class="line"></span><br><span class="line">&#39;&#39;&#39;</span><br><span class="line"></span><br><span class="line">#plt.scatter(x1, y_values, s&#x3D;10)</span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"></span><br><span class="line">plt.plot(x1, y_values) </span><br><span class="line"></span><br><span class="line">## 设置图表标题并给坐标轴加上标签</span><br><span class="line"></span><br><span class="line">#plt.title(&#39;plot Numbers&#39;, fontsize&#x3D;24)</span><br><span class="line"></span><br><span class="line">#plt.xlabel(&#39;xValue&#39;, fontsize&#x3D;14)</span><br><span class="line"></span><br><span class="line">#plt.ylabel(&#39;yValue&#39;, fontsize&#x3D;14)</span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"></span><br><span class="line"># 设置刻度标记的大小</span><br><span class="line"></span><br><span class="line">#plt.tick_params(axis&#x3D;&#39;both&#39;, which&#x3D;&#39;major&#39;, labelsize&#x3D;14)</span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"></span><br><span class="line"># 设置每个坐标轴的取值范围</span><br><span class="line"></span><br><span class="line">#plt.axis([0, 1000, 0, 100])</span><br><span class="line"></span><br><span class="line">plt.show()</span><br><span class="line"></span><br><span class="line">##############画图############################################</span><br></pre></td></tr></table></figure>
+<p><a href="https://blog.csdn.net/carryheart/article/details/79610805" target="_blank" rel="noopener">link</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/01/26/%E5%9F%BA%E4%BA%8Ekeras%E7%9A%84LSTM%E5%A4%9A%E5%8F%98%E9%87%8F%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97%E9%A2%84%E6%B5%8B/" rel="prev" title="基于keras的LSTM多变量时间序列预测">
+      <i class="fa fa-chevron-left"></i> 基于keras的LSTM多变量时间序列预测
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、数据清理"><span class="nav-number">1.</span> <span class="nav-text">一、数据清理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-缺失值处理"><span class="nav-number">1.1.</span> <span class="nav-text">1.缺失值处理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-离群点处理"><span class="nav-number">1.2.</span> <span class="nav-text">2.离群点处理</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#异常值处理："><span class="nav-number">1.2.1.</span> <span class="nav-text">异常值处理：</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-噪声处理-高频去噪"><span class="nav-number">1.3.</span> <span class="nav-text">3.噪声处理(高频去噪)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、数据标准化"><span class="nav-number">2.</span> <span class="nav-text">二、数据标准化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、小波变换和小波阈值法去噪"><span class="nav-number">3.</span> <span class="nav-text">三、小波变换和小波阈值法去噪</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#小波阈值去噪："><span class="nav-number">3.1.</span> <span class="nav-text">小波阈值去噪：</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#pywavelet基于阈值的小波分解重构法去噪"><span class="nav-number">3.1.1.</span> <span class="nav-text">pywavelet基于阈值的小波分解重构法去噪</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">ah</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ah</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
