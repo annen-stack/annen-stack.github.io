@@ -165,6 +165,89 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://annen-stack.github.io/2020/02/10/%E9%9B%86%E4%BD%93%E6%99%BA%E6%85%A7%E7%BC%96%E7%A8%8B-%E7%AC%AC%E4%B8%83%E7%AB%A0%E5%86%B3%E7%AD%96%E6%A0%91%E5%BB%BA%E6%A8%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ah">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="annen's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/02/10/%E9%9B%86%E4%BD%93%E6%99%BA%E6%85%A7%E7%BC%96%E7%A8%8B-%E7%AC%AC%E4%B8%83%E7%AB%A0%E5%86%B3%E7%AD%96%E6%A0%91%E5%BB%BA%E6%A8%A1/" class="post-title-link" itemprop="url">集体智慧编程_第七章决策树建模</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-02-10 15:26:14 / 修改时间：15:27:07" itemprop="dateCreated datePublished" datetime="2020-02-10T15:26:14+08:00">2020-02-10</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="预测注册用户"><a href="#预测注册用户" class="headerlink" title="预测注册用户"></a>预测注册用户</h3><p>针对某个web站点的用户行为及其最终购买决策。最后一栏的服务类型是我们需要预测的内容。<br>来源网站、位置、是否阅读过FAQ、浏览网页数、选择服务类型。</p>
+<p>将数据文件加载进来：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">my_data&#x3D;[line.split(&#39;\t&#39;) for line in file(&#39;decision_tree.txt&#39;)]</span><br></pre></td></tr></table></figure>
+<h4 id="引入决策树"><a href="#引入决策树" class="headerlink" title="引入决策树"></a>引入决策树</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">class decisionnode:</span><br><span class="line">   def __init__(self,col&#x3D;-1,value&#x3D;None,results&#x3D;None,tb&#x3D;None,fb&#x3D;None):</span><br><span class="line">     self.col&#x3D;col</span><br><span class="line">     self.value&#x3D;value</span><br><span class="line">     self.results&#x3D;results</span><br><span class="line">     self.tb&#x3D;tb</span><br><span class="line">     self.fb&#x3D;fb</span><br></pre></td></tr></table></figure>
+<h4 id="对树进行训练"><a href="#对树进行训练" class="headerlink" title="对树进行训练"></a>对树进行训练</h4><p>根据某一栏的数据将列表拆分成两个数据集。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">def divideset(rows,column,value):</span><br><span class="line">    #rows为数据集，columns为某一列的名字，</span><br><span class="line">    split_function&#x3D;None</span><br><span class="line">    if isinstance(value,int) or isinstance(value,float):</span><br><span class="line">        #如果value是数值型数据</span><br><span class="line">        #分成两组,row[column]&gt;&#x3D;value的返回true</span><br><span class="line">        split_function&#x3D;lambda row:row[column]&gt;&#x3D;value</span><br><span class="line">    else:#名词性数据</span><br><span class="line">        split_function&#x3D;lambda row:row[column]&#x3D;value</span><br><span class="line">    set1&#x3D;[row for row in rows if split_function(row)]</span><br><span class="line">    set2&#x3D;[row for row in rows if not split_function(row)]</span><br><span class="line">    return (set1,set2)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dividest(my_data,2,&#39;yes&#39;)</span><br></pre></td></tr></table></figure>
+<h3 id="选择最合适的拆分方案"><a href="#选择最合适的拆分方案" class="headerlink" title="选择最合适的拆分方案"></a>选择最合适的拆分方案</h3><p>对数据集中最后一列的结果进行计数。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">def uniquecounts(rows):</span><br><span class="line">    results&#x3D;&#123;&#125;</span><br><span class="line">    for row in rows:</span><br><span class="line">       #计数结果在最后一列</span><br><span class="line">       r&#x3D;row[len(row)-1]</span><br><span class="line">       if r not in results: results[r]&#x3D;0</span><br><span class="line">       results[r]+&#x3D;1</span><br><span class="line">     return results</span><br></pre></td></tr></table></figure>
+<h4 id="基尼不纯度"><a href="#基尼不纯度" class="headerlink" title="基尼不纯度"></a>基尼不纯度</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">def giniimpurity(rows):</span><br><span class="line">    total&#x3D;len(rows)</span><br><span class="line">    counts&#x3D;uniquecounts(rows)</span><br><span class="line">    imp&#x3D;0</span><br><span class="line">    for k1 in counts:</span><br><span class="line">        p1&#x3D;float(counts[k1])&#x2F;total</span><br><span class="line">        for k2 in counts:</span><br><span class="line">          if k1&#x3D;&#x3D;k2:continue</span><br><span class="line">          p2&#x3D;float(counts[k2])&#x2F;total</span><br><span class="line">          imp+&#x3D;p2*p1</span><br><span class="line">    return imp</span><br></pre></td></tr></table></figure>
+<h4 id="熵"><a href="#熵" class="headerlink" title="熵"></a>熵</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">def entropy(rows):</span><br><span class="line">    from math import log</span><br><span class="line">    log2&#x3D;lambda x:log(x)&#x2F;log(2)</span><br><span class="line">    results&#x3D;uniquecounts(rows)</span><br><span class="line">    ent&#x3D;0</span><br><span class="line">    for r in results.keys():</span><br><span class="line">       p&#x3D;float(results[r])&#x2F;len(rows)</span><br><span class="line">       ent&#x3D;ent-p*log2(p)</span><br><span class="line">     return ent</span><br></pre></td></tr></table></figure>
+
+<h3 id="以递归的方式构造树"><a href="#以递归的方式构造树" class="headerlink" title="以递归的方式构造树"></a>以递归的方式构造树</h3><p>通过为当前数据集选择最合适的拆分条件来构造树。<br>函数首先接受一个由数据行构成的列表作为参数。它遍历了数据集中的每一列，针对各列查找每一种可能的取值，并将数据集拆分成两个新的子集。通过将每个子集的熵乘以子集中所含数据项在原数据集中所占的比重，并记录熵最低的那一对集。如果该值比当前集合的熵大，则拆分过程结束。否则继续使用buildtree函数。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">def buildtree(rows,scoref&#x3D;entropy):</span><br><span class="line">   if len(rows)&#x3D;&#x3D;0 return decisionnode()</span><br><span class="line">   current_score&#x3D;scoref(rows)</span><br><span class="line">   </span><br><span class="line">   best_gain&#x3D;0</span><br><span class="line">   best_criteria&#x3D;None</span><br><span class="line">   best_sets&#x3D;None</span><br><span class="line">   </span><br><span class="line">   #最后一列</span><br><span class="line">   column_count&#x3D;len(rows[0])-1</span><br><span class="line">   #不包括最后一列</span><br><span class="line">   for col in range(0,column_count):</span><br><span class="line">      column_values&#x3D;&#123;&#125;</span><br><span class="line">      for row in rows:</span><br><span class="line">          column_values[row[col]]&#x3D;1#获得该col列的值</span><br><span class="line">      #根据该列中的每个值，尝试对数据集进行划分</span><br><span class="line">      for value in column_values.keys():</span><br><span class="line">          (set1,set2)&#x3D;dividest(rows,col,value)</span><br><span class="line">          p&#x3D;float(len(set1))&#x2F;len(rows)</span><br><span class="line">          gain&#x3D;current_score-p*scoref(set1)-(1-p)*scoref(set2)</span><br><span class="line">          if gain&gt;best_gain and len(set1)&gt;0 and len(set2)&gt;0:</span><br><span class="line">              best_gain&#x3D;gain</span><br><span class="line">              best_criteria&#x3D;(col,value)</span><br><span class="line">              best_sets&#x3D;(set1,set2)</span><br><span class="line">    #创建子分支</span><br><span class="line">    if best_gain&gt;0:</span><br><span class="line">       truebranch&#x3D;buildtree(bestsets[0])</span><br><span class="line">       falsebranch&#x3D;buildtree(bestsets[1])</span><br><span class="line">       return decisionnode(col&#x3D;best_criteria[0],</span><br><span class="line">       value&#x3D;best_criteria[1],tb&#x3D;truebranch,fb&#x3D;falsebranch)</span><br><span class="line">    else:</span><br><span class="line">       return decisionnode(results&#x3D;uniquecounts(rows))</span><br></pre></td></tr></table></figure>
+
+<h3 id="决策树的显示"><a href="#决策树的显示" class="headerlink" title="决策树的显示"></a>决策树的显示</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">def printtree(tree,indent&#x3D;&#39; &#39;):</span><br><span class="line">    if tree.results!&#x3D;None:</span><br><span class="line">      print str(tree.results)</span><br><span class="line">    else:</span><br><span class="line">      print str(tree.col)+&#39;:&#39;+str(tree.value)+&#39;?&#39;</span><br><span class="line">      print indent+&#39;T-&gt;&#39;</span><br><span class="line">      printtree(tree.tb,indent+&#39; &#39;)</span><br><span class="line">      print indent+&#39;F-&gt;&#39;</span><br><span class="line">      printtree(tree.fb,indent+&#39; &#39;)</span><br></pre></td></tr></table></figure>
+<h3 id="对新的观测数据进行分类"><a href="#对新的观测数据进行分类" class="headerlink" title="对新的观测数据进行分类"></a>对新的观测数据进行分类</h3><p>我们对新的观测数据作为参数，然后根据决策树进行分类。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">def classify(observation,tree):</span><br><span class="line">    if tree.results!&#x3D;None:</span><br><span class="line">       return tree.results</span><br><span class="line">    else:</span><br><span class="line">       v&#x3D;observation[tree.col]</span><br><span class="line">       branch&#x3D;None</span><br><span class="line">       if isinstance(v,int) or isinstance(v,float):</span><br><span class="line">          if v&gt;&#x3D;tree.value: branch&#x3D;tree.tb</span><br><span class="line">          else: branch&#x3D;tree.fb</span><br><span class="line">       else:</span><br><span class="line">          if v&#x3D;&#x3D;tree.value: branch&#x3D;tree.tb</span><br><span class="line">          else: branch&#x3D;tree.fb</span><br><span class="line">    return classify(observation,branch)</span><br></pre></td></tr></table></figure>
+<h3 id="决策树的剪枝"><a href="#决策树的剪枝" class="headerlink" title="决策树的剪枝"></a>决策树的剪枝</h3><p>存在过拟合现象，会比实际情况根据特殊性。它可能是专门针对训练集所创建的分支，其熵值比真实情况低。解决办法：当熵减少的数量小于某个最小值时，我们就停止分支的创建。剪枝就是消除多余的节点。</p>
+<p>剪枝的过程就是对具有相同父节点的一组节点进行检查，如果将其合并，熵的增加值是否会小于某个指定的阈值。如果确实如此，则将其合并。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">def prune(tree,mingain):</span><br><span class="line">    #如果分支不是叶节点，则进行剪枝</span><br><span class="line">    if tree.tb.results&#x3D;&#x3D;None:</span><br><span class="line">      prune(tree.tb,mingain)</span><br><span class="line">    if tree.fb.results&#x3D;&#x3D;None:</span><br><span class="line">      prune(tree.fb,mingain)</span><br><span class="line">    #如果两个子分支都是叶节点，则判断它们是否需要合并</span><br><span class="line">    if tree.tb.results!&#x3D;None and tree.fb.results!&#x3D;None</span><br><span class="line">       tb,fb&#x3D;[],[]</span><br><span class="line">       for v,c in tree.tb.results.items():</span><br><span class="line">           tb+&#x3D;[[v]]*c</span><br><span class="line">       for v,c in tree.fb.results.items():</span><br><span class="line">           fb+&#x3D;[[v]]*c    </span><br><span class="line">       delta&#x3D;entrop(tb+fb)-(entropy(tb)+entropy(fb)&#x2F;2)</span><br><span class="line">       if delta&lt;mingain:</span><br><span class="line">          tree.tb,tree.fb&#x3D;None,None</span><br><span class="line">          tree.results&#x3D;uniquecounts(tb,fb)</span><br></pre></td></tr></table></figure>
+<h3 id="处理缺失数据"><a href="#处理缺失数据" class="headerlink" title="处理缺失数据"></a>处理缺失数据</h3><p>加权统计</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">def mdclassify(observation,tree):</span><br><span class="line">    if tree.results!&#x3D;None:</span><br><span class="line">       return tree.results</span><br><span class="line">     else:</span><br><span class="line">       v&#x3D;observation[tree.col]</span><br><span class="line">       if v&#x3D;&#x3D;None:</span><br><span class="line">          tr,fr&#x3D;mdclassify(observation,tree.tb),mdclassify(observation,tree.fb)</span><br><span class="line">          tcount&#x3D;sum(tr.values())</span><br><span class="line">          fcount&#x3D;sum(fr.values())</span><br><span class="line">          tw&#x3D;float(tcount)&#x2F;(tcount+fcount)</span><br><span class="line">          ....</span><br></pre></td></tr></table></figure>
+<p>决策树最大的优势就在于它可以轻易地对一个受训模型进行解释。决策树可以同时接受分类数据和数值数据作为输入。还允许数据的不确定性分配。对于少数的几种可能的结果有效。本章的决策树只能创建满足“大于\小于”条件的节点。决策树最适合处理的是那些带有分界点的、由大量的分类数据和数值数据共同组成的数据集。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://annen-stack.github.io/2020/02/10/%E9%9B%86%E4%BD%93%E6%99%BA%E6%85%A7%E7%BC%96%E7%A8%8B-%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%96%87%E6%A1%A3%E8%BF%87%E6%BB%A4/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1205,114 +1288,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://annen-stack.github.io/2020/01/26/LSTM-1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ah">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="annen's blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/01/26/LSTM-1/" class="post-title-link" itemprop="url">LSTM.1</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-01-26 13:04:08" itemprop="dateCreated datePublished" datetime="2020-01-26T13:04:08+08:00">2020-01-26</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-08 15:17:28" itemprop="dateModified" datetime="2020-02-08T15:17:28+08:00">2020-02-08</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="用LSTM做时间序列测试的一个例子"><a href="#用LSTM做时间序列测试的一个例子" class="headerlink" title="用LSTM做时间序列测试的一个例子"></a>用LSTM做时间序列测试的一个例子</h2><h4 id="问题：航班乘客预测"><a href="#问题：航班乘客预测" class="headerlink" title="问题：航班乘客预测"></a>问题：航班乘客预测</h4><h4 id="数据：1949到1960一共12年，每年12个月的数据，一共144个数据，单位是1000"><a href="#数据：1949到1960一共12年，每年12个月的数据，一共144个数据，单位是1000" class="headerlink" title="数据：1949到1960一共12年，每年12个月的数据，一共144个数据，单位是1000"></a>数据：1949到1960一共12年，每年12个月的数据，一共144个数据，单位是1000</h4><h4 id="目标：预测国际航班未来一个月的乘客数"><a href="#目标：预测国际航班未来一个月的乘客数" class="headerlink" title="目标：预测国际航班未来一个月的乘客数"></a>目标：预测国际航班未来一个月的乘客数</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">import numpy</span><br><span class="line">import matplotlib.pyplot as plt</span><br><span class="line">from pandas import read_csv</span><br><span class="line">import math</span><br><span class="line">from keras.models import Sequential</span><br><span class="line">from keras.layers import Dense</span><br><span class="line">from keras.layers import LSTM</span><br><span class="line">from sklearn.preprocessing  import MinMaxScaler</span><br><span class="line">from sklearn.metrics import mean_squared_error</span><br></pre></td></tr></table></figure>
-<h6 id="导入数据"><a href="#导入数据" class="headerlink" title="导入数据"></a>导入数据</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">dataframe&#x3D;read_csv(&#39;international-airline-passengers.csv&#39;,usecols&#x3D;[1],engine&#x3D;&#39;python&#39;,skipfooter&#x3D;3)</span><br><span class="line">dataset&#x3D;dataframe.values #取y轴</span><br><span class="line">#将整形变为float</span><br><span class="line">dataset&#x3D;dataset.astype(&#39;float32&#39;)</span><br><span class="line">plt.plot(dataset)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
-<h6 id="需要把数据转换一下"><a href="#需要把数据转换一下" class="headerlink" title="需要把数据转换一下"></a>需要把数据转换一下</h6><h6 id="将一列变为两列，第一列是t月的乘客数，第二列是t-1月的乘客数。look-back是预测下一步所需要的time-steps"><a href="#将一列变为两列，第一列是t月的乘客数，第二列是t-1月的乘客数。look-back是预测下一步所需要的time-steps" class="headerlink" title="将一列变为两列，第一列是t月的乘客数，第二列是t+1月的乘客数。look_back是预测下一步所需要的time_steps"></a>将一列变为两列，第一列是t月的乘客数，第二列是t+1月的乘客数。look_back是预测下一步所需要的time_steps</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">def create_dataset(dataset,look_back&#x3D;1):</span><br><span class="line">    datax,datay&#x3D;[],[]</span><br><span class="line">    for i in range(len(dataset)-look_back-1):</span><br><span class="line">         a&#x3D;dataset[i:(i+look_back),0]</span><br><span class="line">         datax.append(a)</span><br><span class="line">         datay.append(dataset[i+look_back,0])</span><br><span class="line">    return numpy.array(datax),numpy.array(datay)</span><br><span class="line">#datax是输入数据，datay是对应的输出数据</span><br><span class="line">numpy.random.seed(7)</span><br></pre></td></tr></table></figure>
-<h6 id="当激活函数为sigmoid或者tanh时，要把数据正则化，此时LSTM比较敏感"><a href="#当激活函数为sigmoid或者tanh时，要把数据正则化，此时LSTM比较敏感" class="headerlink" title="当激活函数为sigmoid或者tanh时，要把数据正则化，此时LSTM比较敏感"></a>当激活函数为sigmoid或者tanh时，要把数据正则化，此时LSTM比较敏感</h6><h6 id="设定67-是训练数据，余下是测试数据"><a href="#设定67-是训练数据，余下是测试数据" class="headerlink" title="设定67%是训练数据，余下是测试数据"></a>设定67%是训练数据，余下是测试数据</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#正则化数据</span><br><span class="line">scaler&#x3D;MinMaxScaler(feature_range&#x3D;(0,1))</span><br><span class="line">dataset&#x3D;scaler.fit_transform(dataset)</span><br><span class="line">#分成训练数据和测试数据,即训练集和测试集是同一个时间序列的不同部分</span><br><span class="line">train_size&#x3D;int(len(dataset)*0.67)</span><br><span class="line">test_size&#x3D;len(dataset)-train_size</span><br><span class="line">train,test&#x3D;dataset[0:train_size,:],dataset[train_size:len(dataset),:]</span><br></pre></td></tr></table></figure>
-<h6 id="输入为X-t时，输出为Y-t-1时的数据，此时look-back为1"><a href="#输入为X-t时，输出为Y-t-1时的数据，此时look-back为1" class="headerlink" title="输入为X=t时，输出为Y=t+1时的数据，此时look_back为1"></a>输入为X=t时，输出为Y=t+1时的数据，此时look_back为1</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">look_back&#x3D;1</span><br><span class="line">#此时trainx和testx的维度为[samples,features]</span><br><span class="line">trainx,trainy&#x3D;create_dataset(train,look_back)</span><br><span class="line">testx,testy&#x3D;creat_dataset(test,look_back)</span><br></pre></td></tr></table></figure>
-<h6 id="由于投入LSTM的X需要这样的结构：-samples-look-back-features-所以交换一下"><a href="#由于投入LSTM的X需要这样的结构：-samples-look-back-features-所以交换一下" class="headerlink" title="由于投入LSTM的X需要这样的结构：[samples,look_back,features],所以交换一下"></a>由于投入LSTM的X需要这样的结构：[samples,look_back,features],所以交换一下</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">trainx&#x3D;numpy.reshape(trainx,(trainx.shape[0],1,trainx.shape[1]))</span><br><span class="line">testx&#x3D;numpy.reshape(testx,(testx.shape[0],1,testx.shape[1]))</span><br></pre></td></tr></table></figure>
-<h6 id="建立LSTM模型"><a href="#建立LSTM模型" class="headerlink" title="建立LSTM模型"></a>建立LSTM模型</h6><h6 id="输入层有一个Input，隐藏层有4个神经元，输出层就是预测一个值，激活函数用sigmoid，迭代100次，batch-size为1"><a href="#输入层有一个Input，隐藏层有4个神经元，输出层就是预测一个值，激活函数用sigmoid，迭代100次，batch-size为1" class="headerlink" title="输入层有一个Input，隐藏层有4个神经元，输出层就是预测一个值，激活函数用sigmoid，迭代100次，batch size为1"></a>输入层有一个Input，隐藏层有4个神经元，输出层就是预测一个值，激活函数用sigmoid，迭代100次，batch size为1</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">model&#x3D;Sequential()</span><br><span class="line">model.add(LSTM(4,input_shape&#x3D;(1,look_back))</span><br><span class="line">model.add(Dense(1))</span><br><span class="line">model.compile(loss&#x3D;&#39;mean_squared_error&#39;,optimizer&#x3D;&#39;adam&#39;)</span><br><span class="line">model.fit(trainx,trainy,epochs&#x3D;100,batch_size&#x3D;1,verbose&#x3D;2)</span><br></pre></td></tr></table></figure>
-<h6 id="预测"><a href="#预测" class="headerlink" title="预测"></a>预测</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">trainpredict&#x3D;model.predict(trainx)</span><br><span class="line">trainpredict&#x3D;model.predict(testx)</span><br></pre></td></tr></table></figure>
-<h6 id="计算误差之前要把预测数据转化为同一单位"><a href="#计算误差之前要把预测数据转化为同一单位" class="headerlink" title="计算误差之前要把预测数据转化为同一单位"></a>计算误差之前要把预测数据转化为同一单位</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">trainpredict&#x3D;scaler.inverse_transform(trainpredict)</span><br><span class="line">trainy&#x3D;scaler.inverse_transform([trainy])</span><br><span class="line">testpredict&#x3D;scaler.inverse_transform(testpredict)</span><br><span class="line">testy&#x3D;scaler.inverse_transform([testy])</span><br></pre></td></tr></table></figure>
-<h6 id="计算mean-squared-error"><a href="#计算mean-squared-error" class="headerlink" title="计算mean squared error"></a>计算mean squared error</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">trainscore&#x3D;math.sqrt(mean_squared_error(trainy[0],trainpredict[:,0&#125;))</span><br><span class="line">print(&#39;train score:%.2f RMSE&#39;%(trainscore))</span><br><span class="line">testscore&#x3D;math.sqrt(mean_squared_error(testy[0],testpredict[:,0]))</span><br><span class="line">print(&#39;test score:%.2f RMSE&#39;%(testscore))</span><br></pre></td></tr></table></figure>
-<h6 id="画出结果"><a href="#画出结果" class="headerlink" title="画出结果"></a>画出结果</h6><h6 id="蓝色为原数据，绿色为训练集的预测值，红色为测试集的预测值"><a href="#蓝色为原数据，绿色为训练集的预测值，红色为测试集的预测值" class="headerlink" title="蓝色为原数据，绿色为训练集的预测值，红色为测试集的预测值"></a>蓝色为原数据，绿色为训练集的预测值，红色为测试集的预测值</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">trainpredictplot &#x3D; numpy.empty_like(dataset)</span><br><span class="line">trainpredictplot[:,:]&#x3D;numpy.nan</span><br><span class="line">trainpredictplot[look_back:len(trainpredict)+look_back,:]&#x3D;trainpredict</span><br><span class="line"></span><br><span class="line">testpredictplot&#x3D;numpy.empty_like(dataset)</span><br><span class="line">testpredictplot[:,:]&#x3D;numpy.nan</span><br><span class="line">testpredictplot[len(trainpredict)+(look_back*2)+1:len(dataset)-1,:]&#x3D;testpredict</span><br><span class="line"></span><br><span class="line">plt.plot(scaler.inverse_transform(dataset))</span><br><span class="line">plt.plot(trainpredictplot)</span><br><span class="line">plt.plot(testpredictplot)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1383,7 +1358,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-count">12</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
