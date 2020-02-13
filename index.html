@@ -165,6 +165,90 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://annen-stack.github.io/2020/02/13/%E9%9B%86%E4%BD%93%E6%99%BA%E6%85%A7%E7%BC%96%E7%A8%8B-%E7%AC%AC%E4%B9%9D%E7%AB%A0%E6%A0%B8%E6%96%B9%E6%B3%95%E4%B8%8ESVM/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ah">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="annen's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/02/13/%E9%9B%86%E4%BD%93%E6%99%BA%E6%85%A7%E7%BC%96%E7%A8%8B-%E7%AC%AC%E4%B9%9D%E7%AB%A0%E6%A0%B8%E6%96%B9%E6%B3%95%E4%B8%8ESVM/" class="post-title-link" itemprop="url">集体智慧编程_第九章核方法与SVM</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-02-13 17:39:21 / 修改时间：17:40:14" itemprop="dateCreated datePublished" datetime="2020-02-13T17:39:21+08:00">2020-02-13</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>为约会网站的用户寻找配对；数据包含数值型、名词性和大量的非线性关系。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">class matchrow：</span><br><span class="line">    def __init__(self,row,allnum&#x3D;False):</span><br><span class="line">        if allnum:</span><br><span class="line">           self.data&#x3D;[float(row[i]) for i in range(len(row)-1)</span><br><span class="line">        else:</span><br><span class="line">           self.data&#x3D;row[0:len(data)-1]</span><br><span class="line">        self.match&#x3D;int(row[len(row)-1]))</span><br><span class="line">    def loadmatch(f,allnum&#x3D;False):</span><br><span class="line">        rows&#x3D;[]</span><br><span class="line">        for line in file(f):</span><br><span class="line">            rows.append(matchrow(line.split(&#39;,&#39;),allnum))</span><br><span class="line">        return rows</span><br></pre></td></tr></table></figure>
+<h4 id="基本的线性分类"><a href="#基本的线性分类" class="headerlink" title="基本的线性分类"></a>基本的线性分类</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">def lineartrain(rows):</span><br><span class="line">    averages&#x3D;&#123;&#125;</span><br><span class="line">    counts&#x3D;&#123;&#125;</span><br><span class="line">    for row in rows:</span><br><span class="line">        c1&#x3D;row.match</span><br><span class="line">        averages.setdefault(c1,[0.0]*(len(row.data)))</span><br><span class="line">        counts,setdefault(c1,0)</span><br><span class="line">        for i in range(len(row.data)):</span><br><span class="line">           averages[c1][i]&#x3D;float(row.data[i])</span><br><span class="line">        counts[c1]+&#x3D;1</span><br><span class="line">    for c1,avg in averages.items():</span><br><span class="line">        for i in range(len(avg)):</span><br><span class="line">            avg[i]&#x3D;avg[i]&#x2F;counts[c1]</span><br><span class="line">    return averages</span><br><span class="line">    确定匹配和不匹配状态下的数据的平均值，显示在图上。</span><br></pre></td></tr></table></figure>
+<p>点积。class=sign((x-(m0+m1)/2)*(m0-m1)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">def dotproduct(v1,v2):</span><br><span class="line">    return sum([v1[i]*v2[i] for i in range(len(v1))])</span><br><span class="line">    </span><br><span class="line">def dpclassify(point,avgs):</span><br><span class="line">    b&#x3D;(dotproduct(avgs[1],avgs[1])-dotproduct(avgs[0],avgs[0]))&#x2F;2</span><br><span class="line">    y&#x3D;dotproduct(point,avgs[0])-dotproduct(point,avgs[1])+b</span><br><span class="line">    if y&gt;0: return 0</span><br><span class="line">    else: return 1</span><br></pre></td></tr></table></figure>
+<h4 id="分类特征"><a href="#分类特征" class="headerlink" title="分类特征"></a>分类特征</h4><p>将数据转化为数值型。<br>例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">def yesno(v):</span><br><span class="line">    if v&#x3D;&#x3D;&#39;yes&#39;: return 1</span><br><span class="line">    elif v&#x3D;&#x3D;&#39;no&#39;:return -1</span><br><span class="line">    else: return 0</span><br></pre></td></tr></table></figure>
+<h4 id="兴趣列表"><a href="#兴趣列表" class="headerlink" title="兴趣列表"></a>兴趣列表</h4><p>统计具有相同的兴趣个数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">def matchcount(interest1,interest2):</span><br><span class="line">    l1&#x3D;interest1.split(&#39;:&#39;)</span><br><span class="line">    l2&#x3D;interest2.split(&#39;:&#39;)</span><br><span class="line">    x&#x3D;0</span><br><span class="line">    for v in l1:</span><br><span class="line">        if v in l2:</span><br><span class="line">           x+&#x3D;1</span><br><span class="line">    return x</span><br></pre></td></tr></table></figure>
+<h4 id="利用Yahoo-Maps来确定距离"><a href="#利用Yahoo-Maps来确定距离" class="headerlink" title="利用Yahoo! Maps来确定距离"></a>利用Yahoo! Maps来确定距离</h4><p>略</p>
+<h4 id="构造新的数据集"><a href="#构造新的数据集" class="headerlink" title="构造新的数据集"></a>构造新的数据集</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">def loadnumerical():</span><br><span class="line">    oldrows&#x3D;loadmatch(&#39;matchmaker.csv&#39;)</span><br><span class="line">    newrows&#x3D;[]</span><br><span class="line">    for row in oldrows:</span><br><span class="line">       d&#x3D;row.data</span><br><span class="line">       data&#x3D;[float(d[0]),yesno(d[1]),yesno(d[2]),float(d[5]),yesno(d[6]),yesno(d[7]),matchcount(d[3],d[8]),milesdistance(d[4],d[9]),</span><br><span class="line">       row.match]</span><br><span class="line">       newrows.append(matchrow(data))</span><br><span class="line">    return newrows</span><br></pre></td></tr></table></figure>
+<h4 id="对数据进行缩放处理"><a href="#对数据进行缩放处理" class="headerlink" title="对数据进行缩放处理"></a>对数据进行缩放处理</h4><p>将所有数据转化为0-1之间的值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">def scaledata(rows):</span><br><span class="line">   low&#x3D;[99999999]*len(rows[0].data)</span><br><span class="line">   high&#x3D;[-9999999]*len(rows[0].data)</span><br><span class="line">   for row in rows:</span><br><span class="line">      d&#x3D;row.data</span><br><span class="line">      for i in range(len(d)):</span><br><span class="line">         if d[i]&lt;low[i]: low[i]&#x3D;d[i]</span><br><span class="line">         if d[i]&gt;high[i]: high[i]&#x3D;d[i]</span><br><span class="line">  def scaleinput(d):</span><br><span class="line">    return     [(d.data[i]-low[i])&#x2F;(high[i]-low[i])       </span><br><span class="line">    for i in range(len(low))]</span><br><span class="line">  newrows&#x3D;[matchrow(scaleinput(row.data)+[row.match]) for row in rows]</span><br><span class="line">  </span><br><span class="line">  return newrows,scaleinput</span><br></pre></td></tr></table></figure>
+<h4 id="理解核方法"><a href="#理解核方法" class="headerlink" title="理解核方法"></a>理解核方法</h4><p>我们可以预先的坐标点进行变换，构造一个用一条直线就可以进行划分的新数据集。</p>
+<h5 id="核技法"><a href="#核技法" class="headerlink" title="核技法"></a>核技法</h5><p>用一个新的函数来取代原来的点积函数，当借助某个映射函数将数据第一次变换到更高纬度的坐标空间时，新函数将会返回高纬度坐标空间的点积结果。————径向基函数。是非线性的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">def rbf(v1,v2,gamma&#x3D;20):</span><br><span class="line">    dv&#x3D;[v1[i]-v2[i] for i in range(len(v1))]</span><br><span class="line">    l&#x3D;veclength(dv)</span><br><span class="line">    return math.e**(-gamma*l)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">def getoffset(rows,gamma&#x3D;10):</span><br><span class="line">略</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">def nlclassify(point,rows,offset,gamma&#x3D;10)</span><br><span class="line">    sum0&#x3D;0</span><br><span class="line">    sum1&#x3D;0</span><br><span class="line">    count1&#x3D;0</span><br><span class="line">    count0&#x3D;0</span><br><span class="line">    for row in rows:</span><br><span class="line">        if row.match&#x3D;&#x3D;0:</span><br><span class="line">             sum0+&#x3D;rbf(point,row.data,gamma)</span><br><span class="line">             count0+&#x3D;1</span><br><span class="line">        else:</span><br><span class="line">             sum1+&#x3D;rbf(point,row.data,gamma)</span><br><span class="line">             count1+&#x3D;1</span><br><span class="line">    y&#x3D;(1&#x2F;count0)*sum0-(1&#x2F;count1)*sum1+offset</span><br><span class="line">    </span><br><span class="line">    if y&lt;0:return 0</span><br><span class="line">    else return 1 #将经过处理的数据进行判别(dpclassify)</span><br></pre></td></tr></table></figure>
+
+<h4 id="支持向量机"><a href="#支持向量机" class="headerlink" title="支持向量机"></a>支持向量机</h4><p><img src="C1343EB5CB5D470ABFC26C3D334CCC9B" alt="image"></p>
+<p>我们引入一个LIBSVM的开源库，它能够对SVM模型进行训练、给出预测。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">from svm import *</span><br><span class="line">prob&#x3D;svm_problem([1,-1],[[1,0,1],[-1,0,-1]])</span><br><span class="line">param&#x3D;svm_parameter(kernel_type&#x3D;LINEAR,C&#x3D;10)</span><br><span class="line">#训练</span><br><span class="line">m&#x3D;svm_model(prob,param)</span><br><span class="line">#预测</span><br><span class="line">m.predice([1,1,1])</span><br></pre></td></tr></table></figure>
+<h5 id="用SVM用于婚介数据集-系统自带的函数"><a href="#用SVM用于婚介数据集-系统自带的函数" class="headerlink" title="用SVM用于婚介数据集,系统自带的函数"></a>用SVM用于婚介数据集,系统自带的函数</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">answers,inputs&#x3D;[r.match for r in scaledset],[r.data for r in scaledset]</span><br><span class="line">param&#x3D;svm_parameter(kernel_type&#x3D;RBF)</span><br><span class="line">prob&#x3D;svm_problem(answers,inputs)</span><br><span class="line">m&#x3D;svm_model(prob,param)</span><br><span class="line"></span><br><span class="line">m.predict(scalef(newrow))</span><br><span class="line">#利用交叉验证函数来检验模型的质量...</span><br><span class="line">g&#x3D;cross_validation(prob,param,4)</span><br><span class="line">n&#x3D;sum([abs(answers[i]-g[i]) for i in range(len(g))</span><br></pre></td></tr></table></figure>
+<p>若n=116,由于初始集为500，则得到了384项正确匹配。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://annen-stack.github.io/2020/02/10/%E9%9B%86%E4%BD%93%E6%99%BA%E6%85%A7%E7%BC%96%E7%A8%8B-%E7%AC%AC%E4%B8%83%E7%AB%A0%E5%86%B3%E7%AD%96%E6%A0%91%E5%BB%BA%E6%A8%A1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1065,229 +1149,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://annen-stack.github.io/2020/01/26/%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%B5%8B%E8%AF%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ah">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="annen's blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/01/26/%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%B5%8B%E8%AF%95/" class="post-title-link" itemprop="url">大数据测试</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2020-01-26 13:53:34 / 修改时间：13:53:55" itemprop="dateCreated datePublished" datetime="2020-01-26T13:53:34+08:00">2020-01-26</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、绪论："><a href="#一、绪论：" class="headerlink" title="一、绪论："></a>一、绪论：</h2><p> 大数据是大容量、高速率、多形态的信息资产，且需要成本效益、信息处理来增加洞察力和决策创新形式。大数据是指大小超出了典型数据库软件工具收集、存储、管理和分析能力的数据集。</p>
-<p>大数据分析框架测试、算法质量测试、性能测试、大数据安全和隐私软件测试的经典定义：为发现软件错误，而运行软件的活动。</p>
-<p>基本思路：根据软件需求规格说明书，执行软件操作和输入数据，依据软件实际输出结果和预期输出结果来评判软件是否满足规格的要求</p>
-<p>本书以Hadoop为主线:底层支撑框架层聚焦于单元测试和框架基准测试；基本算法中涵盖了聚类、分类及其个性化推荐；应用层中，介绍了其性能测试中的若干问题，阐述了数据集的设计与分析；最后讨论了大数据的安全和隐私问题。</p>
-<h4 id="大数据特征"><a href="#大数据特征" class="headerlink" title="大数据特征"></a>大数据特征</h4><p>数据类型繁多；处理速度快；数据体量大；数据价值；真实性</p>
-<h4 id="大数据的过程模型"><a href="#大数据的过程模型" class="headerlink" title="大数据的过程模型"></a>大数据的过程模型</h4><p>数据源；数据收集及录入；数据过滤及分类；数据分类/建模/预测；数据交付及可视化；消费者的数据分析及应用</p>
-<h4 id="大数据相关标准"><a href="#大数据相关标准" class="headerlink" title="大数据相关标准"></a>大数据相关标准</h4><p>大数据相关的标准可分为两大类：基础类和技术类。基础类包括大数据平台技术参考架构、大数据总体技术要求、大数据标准化指南。技术类可分为数据采集、数据存储、数据处理和分析、数据管理。</p>
-<p>1.数据采集    数据抽取和预处理等相关规范</p>
-<p>2.数据存储     各种类型数据的存储和访问接口规范。</p>
-<p>3.数据处理和分析    </p>
-<p> 4.数据管理   针对数据的源数据管理、质量管理及数据管理接口规范</p>
-<h4 id="大数据的应用"><a href="#大数据的应用" class="headerlink" title="大数据的应用"></a>大数据的应用</h4><p> 趋势预测；疫情分析；消费行为分析；智慧金融；智慧金融；精确营销; 舆情分析;</p>
-<h4 id="大数据引起的软件变化"><a href="#大数据引起的软件变化" class="headerlink" title="大数据引起的软件变化"></a>大数据引起的软件变化</h4><p>传统的软件架构无法满足大数据处理的要求；大数据软件处理的结果是未知的；大数据的软件思维模式发生逆转。</p>
-<h4 id="软件测试的新挑战"><a href="#软件测试的新挑战" class="headerlink" title="软件测试的新挑战"></a>软件测试的新挑战</h4><p>测试ORACLE问题： 软件测试的基本前提是在确定的输入下，存在确定的输出。测试要将软件运行的实际结果和预期的结果相比较，从而得出软件运行正确与否。</p>
-<p>测试能力问题：测试结果的判定问题：在大数据的分析背景下，典型的应用场景不存在确定的输出，大数据的分析的准确性很大程度上依赖于数据的输入和数据的分布特性。</p>
-<p>隐私问题：（略）</p>
-<h2 id="面向大数据框架的测评"><a href="#面向大数据框架的测评" class="headerlink" title="面向大数据框架的测评"></a>面向大数据框架的测评</h2><p>本章将介绍Hadoop大数据框架的单元测试、大数据的数据清洗、数据质量评估框架以及大数据的基准性能测试技术。</p>
-<h4 id="2-1大数据的数据处理流程"><a href="#2-1大数据的数据处理流程" class="headerlink" title="2.1大数据的数据处理流程"></a>2.1大数据的数据处理流程</h4><p>在处理大数据之前需要对来自不同数据源的数据进行数据处理，包括数据抽取和数据集成。通过数据抽取和数据集成操作提取出关系和实体，对其进行关联和聚类的相关操作后，采用统一定义的结构来存储这些数据。数据清洗在数据集成与数据抽取之前，保证数据质量与可行性。</p>
-<h4 id="2-2面向数据质量的测评"><a href="#2-2面向数据质量的测评" class="headerlink" title="2.2面向数据质量的测评"></a>2.2面向数据质量的测评</h4><h5 id="数据质量的定义"><a href="#数据质量的定义" class="headerlink" title="数据质量的定义"></a>数据质量的定义</h5><p>数据本身质量：数据真实性、数据完备性、数据自治性。</p>
-<p>数据过程质量：数据使用质量、数据存储质量、数据传输质量。</p>
-<h5 id="数据质量问题的分类"><a href="#数据质量问题的分类" class="headerlink" title="数据质量问题的分类"></a>数据质量问题的分类</h5><p>略</p>
-<h5 id="数据预处理"><a href="#数据预处理" class="headerlink" title="数据预处理"></a>数据预处理</h5><p>1.数据清理</p>
-<p>不符合要求的数据：数据缺失；数据错误；数据重复（mapreduce去重）</p>
-<p>2.数据集成/数据变换</p>
-<p>数据集成是指从逻辑上或者物理上将来源或格式以及特点性质不同的数据有机地集中起来，为数据挖掘提供完整的数据源。</p>
-<p>数据集成问题分类：数据表链接不匹配；冗余；数据值冲突。</p>
-<p>数据变换：属性的数据类型转换；属性构造；数据离散化；数据标准化。</p>
-<p>3.数据规约</p>
-<p>可以获得数据集的简化表示；属性选择、实例选择。</p>
-<h5 id="数据质量测评"><a href="#数据质量测评" class="headerlink" title="数据质量测评"></a>数据质量测评</h5><p>1.数据清洗框架和工具</p>
-<p>数据清洗：映射、匹配、聚集、合并、跟踪。</p>
-<p>2.数据清洗评估</p>
-<p>相关性；准确性；及时性；完整性；一致性；</p>
-<h4 id="2-3分布式数据模型及测试"><a href="#2-3分布式数据模型及测试" class="headerlink" title="2.3分布式数据模型及测试"></a>2.3分布式数据模型及测试</h4><h5 id="框架："><a href="#框架：" class="headerlink" title="框架："></a>框架：</h5><p>Hadoop的核心是HDFS和MapReduce，为用户提供了系统底层透明的分布式基础框架。</p>
-<p>mapreduce:分布式数据处理模型和执行环境，运用于大规模的通用计算机集群。</p>
-<p>HDFS：Hadoop的分布式文件系统，运用于大规模的通用计算机集群。</p>
-<p>HBase:分布式按列存储的数据，使用HDFS作为底层存储，同时支持MapReduce的批量式计算和点查询。</p>
-<p>Hive:分布式、按列存储的数据仓库。</p>
-<h5 id="数据模型"><a href="#数据模型" class="headerlink" title="数据模型"></a>数据模型</h5><p>最底层的两个抽象实体，分别是HDFS和MapReduce。</p>
-<h5 id="单元测试"><a href="#单元测试" class="headerlink" title="单元测试"></a>单元测试</h5><p>MRUnit是针对MapReduce的单元测试框架；针对不同的测试对象，MRUnit使用以下几种Driver:</p>
-<p>MapDriver   测试单独的Map</p>
-<p>ReduceDriver  测试单独的Reduce</p>
-<p>MapReduce Driver 将Map与Reduce结合起来测试</p>
-<p>从Apache下载MRUnit最新版的jar包，并将jar包添加到hadoop的IDE Classpath 路径中。</p>
-<h5 id="测试代码："><a href="#测试代码：" class="headerlink" title="测试代码："></a>测试代码：</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">public class SMSCDRMapperReducerTest&#123;</span><br><span class="line">    MapDriver&lt;LongWritable,Text,Text,IntWritable&gt;mapDriver; </span><br><span class="line">    ReduceDriver&lt;Text,IntWritable,Text,IntWritable&gt;reduceDriver;</span><br><span class="line">    MapReduceDriver&lt;LongWritable,Text,Text,IntWritable,Text,IntWritable&gt;mapReduceDriver;</span><br><span class="line">    @Before</span><br><span class="line">       public void setUp()&#123;</span><br><span class="line">           SMSCDRMapper mapper &#x3D; new SMSCDRMapper();</span><br><span class="line">           SMSCDReducer reducer &#x3D; new SMSCDRReducer();</span><br><span class="line">           mapReduceDriver &#x3D; MapReduceDriver.newMapReduceDriver(mapper,reducer);</span><br><span class="line">       &#125;</span><br><span class="line">   @Text    </span><br><span class="line">       public void testMapReduce()&#123;</span><br><span class="line">               Text mapInputValue1 &#x3D; new Text(&quot;595877;1;7585458855;4441417;5&quot;)</span><br><span class="line">               Text mapInputValue2 &#x3D; new Text(&quot;735856;1;5498749558;8478941;3&quot;)</span><br><span class="line">               mapReduceDriver.withInput(new LongWritable(1),mapInputValue1);</span><br><span class="line">               mapReduceDriver.withInput(new LongWritable(1),mapInputValue2);</span><br><span class="line">               mapReduceDriver.addOutput(new Text(&quot;5&quot;),new IntWritable(1));</span><br><span class="line">               mapReduceDriver.addOutput(new Text(&quot;3&quot;),new IntWritable(1));</span><br><span class="line">               maReduceDriver.runTest();</span><br><span class="line">       &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="2-4大数据的基准测试"><a href="#2-4大数据的基准测试" class="headerlink" title="2.4大数据的基准测试"></a>2.4大数据的基准测试</h4><p>基准测试是一种测量和评估软件性能指标的典型活动。可以在某个时刻通过基准测试建立一个已知的性能水平，当系统的软硬件环境发生变化后再进行一次基准测试，以确定那些变化对性能的影响。</p>
-<h5 id="2-4-1测试方法"><a href="#2-4-1测试方法" class="headerlink" title="2.4.1测试方法"></a>2.4.1测试方法</h5><h6 id="1）测试步骤"><a href="#1）测试步骤" class="headerlink" title="1）测试步骤"></a>1）测试步骤</h6><p>通常是在系统上运行一系列的测试程序，并把性能计数器的结果保存起来，这些结果称为“性能指标”。</p>
-<h6 id="2）测试工具集"><a href="#2）测试工具集" class="headerlink" title="2）测试工具集"></a>2）测试工具集</h6><p>包括工业界、科研界提出的测试工具集和大数据提供的测试基准。</p>
-<p>具体包括：</p>
-<p>1.BigBench</p>
-<p>2.hadoop自带的测试基准，这些程序可以从多个角度对Hadoop进行测试，TestDFSIO,mrbench和nnbench是三个广泛使用的测试。</p>
-<p>TestDFSIO用于测试HDFS的IO性能。</p>
-<p>nnbench用于测试NameNode负载。</p>
-<p>mrbench会多次重复执行一个小作业，用于检查在机群上小作业的运行是否可以重复以及运行是否高效。</p>
-<p>3.HBase系统本身提供了性能测试工具。</p>
-<h6 id="3）数据准备"><a href="#3）数据准备" class="headerlink" title="3）数据准备"></a>3）数据准备</h6><p>数据基准测试中常用的数据生成工具包括HiBench与BDGS。</p>
-<p>HiBench的容量是扩展的，可以生成非结构的文本数据类型并支持hadoop hive。BDGS在保留原始数据特性的基础上以小规模的真实数据生成大规模的数据。</p>
-<p>并行数据生成框架是一种适应性很强的数据生成工具，可以在短时间内生成大量的关系数据。PDGF利用并行随机数发生器来生成独立的相关值。</p>
-<h5 id="2-4-2测试内容"><a href="#2-4-2测试内容" class="headerlink" title="2.4.2测试内容"></a>2.4.2测试内容</h5><p>下面给出不同的测试工具集包括的测试内容：</p>
-<p>1.big data bench from uc berkeley<br>redshift \hive\shark\impala</p>
-<p>2.bigdatabench</p>
-<p>3.hibench基准测试</p>
-<p>4.hadoop基准测试</p>
-<p>TestDFSIO的测试步骤：</p>
-<p>用法：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Usage: TestDFSIO[genericOptions]   -read|-write|-append|-clean[-nrFiles N]</span><br></pre></td></tr></table></figure>
-<p>命令行：</p>
-<p>例子将往HDFS中写入10个1000MB的文件： </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hadoop jar $HADOOP_HOME&#x2F;hadoop - *test*.jar TestDFSIO -read -nrFiles 10  -fileSize 1000</span><br></pre></td></tr></table></figure>
-<p>nnbench：用于测试NameNode的负载，它会生成很多与HDFRS相关的请求，给NameNode施加压力。<br>例如，使用12个mapper和6个reducer来创建1000个文件。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hadoop jar $HADOOP_HOME&#x2F;hadoop - *test*.jar nnbench\</span><br><span class="line">   -operation create_write -maps 12 -reduces 6 -blockSize 1\</span><br><span class="line">   -bytesToWrite 0 -numberOfFiles 1000 -replicationFactorPerFiles 3\</span><br><span class="line">   -readFileAfterOpen true -baseDir&#x2F;benchmarks&#x2F;NNBench - &#39;hostname -s&#39;</span><br></pre></td></tr></table></figure>
-<p>mrbench会多次重复执行一个小作业，用于检查在机群上小作业的运行是否可以重复以及运行是否高效。<br>例如，运行一个小作业50次。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hadoop jar $HADOOP_HOME&#x2F;hadoop - *test*.jar mrbench -numRuns 50</span><br></pre></td></tr></table></figure>
-<p>Terasort是测试Hadoop的一个有效的排序程序。通过Hadoop自带的Terasort排序程序，测试不同的Map任务和Reduce 任务数量，对hadoop性能的影响。<br>一个完整的Terasort测试需要按三个步骤执行：</p>
-<p>1.用TeraGen生成1GB的随机数据，并输入到目录/examples/terasort- input</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hadoop jar $HADOOP_HOME&#x2F;hadoop-examples-0.20.2-cdh3u3.jar teragen \</span><br><span class="line">    10000000&#x2F;examples&#x2F;terasort- input</span><br></pre></td></tr></table></figure>
-<p>2.输入数据运行TeraSort对数据进行排序，并将结果输出到目录：examples/terasort- output</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hadoop jar $HADOOP_HOME&#x2F;hadoop-examples-0.20.2-cdh3u3.jar terasort \</span><br><span class="line">    examples&#x2F;terasort- input&#x2F;examples&#x2F;terasort- output</span><br></pre></td></tr></table></figure>
-<p>3.用TeraValidate验证排好序的输出数据，如果有问题，将乱序的Key输出到目录</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hadoop jar $HADOOP_HOME&#x2F;hadoop-examples-0.20.2-cdh3u3.jar teravalidate \                            </span><br><span class="line">      examples&#x2F;terasort- input&#x2F;examples&#x2F;terasort- validate</span><br></pre></td></tr></table></figure>
-<p>5.微基准测试</p>
-<p>用hadoop对sort greo,wordcount进行微基准测试实例，包括数据生成和测试执行两步骤。</p>
-<p>6.关系查询</p>
-<p>针对数据库中的相关信息进行，基准测试主要包括：装载数据、查询准备和执行查询三个步骤。</p>
-<p>7.HBase</p>
-<p>HBase自带的测试主要步骤</p>
-<p>1）环境配置<br>2）测试<br>3）Bulk load对HBase测试</p>
-<h2 id="三-大数据智能算法及测评技术"><a href="#三-大数据智能算法及测评技术" class="headerlink" title="三.大数据智能算法及测评技术"></a>三.大数据智能算法及测评技术</h2><h4 id="3-1概述"><a href="#3-1概述" class="headerlink" title="3.1概述"></a>3.1概述</h4><p>大数据基础算法：</p>
-<p>聚类算法与评估：层次聚类、流聚类、K-均值。</p>
-<p>分类算法与评估：朴素贝叶斯、支持向量机、K近邻</p>
-<p>大数据应用算法：</p>
-<p>推荐系统算法与评估：用户聚类、物品聚类、用户行为分类、推荐算法</p>
-<h4 id="3-2聚类算法及测评"><a href="#3-2聚类算法及测评" class="headerlink" title="3.2聚类算法及测评"></a>3.2聚类算法及测评</h4><p>聚类的目的是在海量或难以理解的数据集中发现层次和规律，或让数据集更容易被理解，属于无监督机器学习算法。</p>
-<h5 id="聚类的典型算法及分析"><a href="#聚类的典型算法及分析" class="headerlink" title="聚类的典型算法及分析"></a>聚类的典型算法及分析</h5><p>1.层次聚类法</p>
-<p>1）首先开始将每个点视为簇</p>
-<p>2）找出所有簇中距离最近的两个簇</p>
-<p>3）合并成为一个新的簇</p>
-<p>4）重复步骤</p>
-<p>算法思想非常简单，仅可适用于规模相对较小的数据集。</p>
-<p>2.K-均值聚类算法</p>
-<p>1）首先选择K个点，称为聚类质心</p>
-<p>2）遍历数据集中的每个点，按照距离K个质心的距离，将其与距离最近的质心关联起来，与同一质心相关联的所有点聚成一类。</p>
-<p>3）计算每一类中所有点位置的均值，将该类的质心移动到新质心的位置。</p>
-<p>4）重复上述步骤。</p>
-<p>3.并行化聚类法<br>将聚类算法部署在MapReduce框架中能够大大提高算法的并行程度。</p>
-<p>K-均值算法目前已经在Apache的开源机器学习软件库中已经实现。</p>
-<h5 id="聚类算法的测试与评估"><a href="#聚类算法的测试与评估" class="headerlink" title="聚类算法的测试与评估"></a>聚类算法的测试与评估</h5><p>略</p>
-<h4 id="3-3分类算法及评估"><a href="#3-3分类算法及评估" class="headerlink" title="3.3分类算法及评估"></a>3.3分类算法及评估</h4><p>有监督的机器学习</p>
-<p>朴素贝叶斯分类算法</p>
-<p>支持向量机算法 ：数据集总体上是线性可分的。对于线性不可分的情况，支持向量机的核心思想是将输入数据的特征向量映射到高维的特征向量空间，并在该特征空间中构造最优的分类面，这种方法称为核技巧。</p>
-<p>并行化分类算法</p>
-<p>分类算法的测试（略）</p>
-<p>分类器性能的评估（略）</p>
-<h4 id="3-4推荐系统算法及其测评"><a href="#3-4推荐系统算法及其测评" class="headerlink" title="3.4推荐系统算法及其测评"></a>3.4推荐系统算法及其测评</h4><p>一个完整的推荐系统主要由四个核心模块组成：用户特征的收集模块、用户行为的建模与分析模块、物品的排序与推荐模块、推荐系统的评估模块。</p>
-<p>1）基于内容的推荐算法</p>
-<p>根据物品的特征来计算物品与物品之间的相似度  。</p>
-<p>2）基于用户的协同过滤推荐</p>
-<p>一个用户会喜欢和他有相似偏好的用户喜欢的物品。计算用户的相似度，找到与目标用户偏好相似的用户集合。在这个用户集合中分析并找出目标用户可能喜欢，并且没有听说过的物品推荐给用户。</p>
-<p>3）基于物品的协同过滤推荐</p>
-<p>一个用户会喜欢和他之前喜欢的物品类似的物品。<br>计算物品之间的相似度。根据物品之间的相似度和用户的历史行为给用户推荐他们可能感兴趣的物品。</p>
-<p>推荐系统的测评实现（略）</p>
-<p>推荐系统评估（略）</p>
-<h2 id="四-大数据应用的性能测试技术"><a href="#四-大数据应用的性能测试技术" class="headerlink" title="四.大数据应用的性能测试技术"></a>四.大数据应用的性能测试技术</h2><p>性能测试包括并发测试、负载测试、压力测试和容量测试。</p>
-<p>1.应用性能指标：</p>
-<p>呈现时间、数据传输时间、系统处理时间。<br>性能度量数据包括：<br>响应时间、用户数、吞吐量。</p>
-<p>2.监控指标：</p>
-<p> 用户监控、在某段时间内在线人数监控、页面访问次数等等。<br> 大数据的数据结构特点：</p>
-<h4 id="4-1大数据应用的性能测评模型"><a href="#4-1大数据应用的性能测评模型" class="headerlink" title="4.1大数据应用的性能测评模型"></a>4.1大数据应用的性能测评模型</h4><h5 id="4-1-1应用负载模型"><a href="#4-1-1应用负载模型" class="headerlink" title="4.1.1应用负载模型"></a>4.1.1应用负载模型</h5><p>略</p>
-<h5 id="4-1-2数据负载模型"><a href="#4-1-2数据负载模型" class="headerlink" title="4.1.2数据负载模型"></a>4.1.2数据负载模型</h5><p>性能测试流程：<br>需求分析、测试方案、测试设计、测试开发、环境准备、测试执行、结果汇总、分析调优。结构化数据、非结构化数据、半结构化数据。</p>
-<h2 id="五-大数据应用的安全测评技术"><a href="#五-大数据应用的安全测评技术" class="headerlink" title="五.大数据应用的安全测评技术"></a>五.大数据应用的安全测评技术</h2><h4 id="5-1影响架构安全的因素"><a href="#5-1影响架构安全的因素" class="headerlink" title="5.1影响架构安全的因素"></a>5.1影响架构安全的因素</h4><h5 id="1）分布式计算框架安全"><a href="#1）分布式计算框架安全" class="headerlink" title="1）分布式计算框架安全"></a>1）分布式计算框架安全</h5><p>MapReduce是常用的分布式计算框架，由map和reduce两个函数组成。map函数主要负责读入输入数据，把它分成可以用相同方法解决的小数据块，然后把这些小数据块分发到不同的节点上，每一个工作节点做同样的事，再把处理的结果返回reduce函数。reduce函数把所有结果组合输出。所以map和reduce都是并行运行的，从而能够处理一般服务器不能处理的大数据量处理问题。</p>
-<p>实际存在许多不安全因素：</p>
-<p>1.不可信的Map函数</p>
-<p>2.缺乏用户及服务器安全认证机制和访问控制机制</p>
-<p>3.缺乏传输以及存储加密</p>
-<h5 id="2）非关系型数据存储安全"><a href="#2）非关系型数据存储安全" class="headerlink" title="2）非关系型数据存储安全"></a>2）非关系型数据存储安全</h5><p>NoSQL是一种非关系型数据库。</p>
-<p>1.薄弱的验证机制</p>
-<p>2.低效的鉴权机制</p>
-<p>3.NoSQL易受各类注入攻击</p>
-<p>4.事务处理的一致性较弱</p>
-<h4 id="5-2影响数据安全的要素"><a href="#5-2影响数据安全的要素" class="headerlink" title="5.2影响数据安全的要素"></a>5.2影响数据安全的要素</h4><h5 id="1）数据来源的可靠性"><a href="#1）数据来源的可靠性" class="headerlink" title="1）数据来源的可靠性"></a>1）数据来源的可靠性</h5><p>1.伪造或刻意制造的数据</p>
-<p>2.数据在传播过程中的逐步失真或被人为破坏</p>
-<p>3.元数据可能被伪造和修改</p>
-<h5 id="2）数据泄露"><a href="#2）数据泄露" class="headerlink" title="2）数据泄露"></a>2）数据泄露</h5><p>略</p>
-<h5 id="3）数据挖掘和分析中的隐私问题"><a href="#3）数据挖掘和分析中的隐私问题" class="headerlink" title="3）数据挖掘和分析中的隐私问题"></a>3）数据挖掘和分析中的隐私问题</h5><p>略</p>
-<h4 id="5-3大数据架构的安全测评"><a href="#5-3大数据架构的安全测评" class="headerlink" title="5.3大数据架构的安全测评"></a>5.3大数据架构的安全测评</h4><h5 id="分布式计算框架的安全测评"><a href="#分布式计算框架的安全测评" class="headerlink" title="分布式计算框架的安全测评"></a>分布式计算框架的安全测评</h5><p>在用户使用mapreduce框架中常出现的危险类型有以下几种：</p>
-<p>1.一个故障的map工作节点产生了错误结果，使得最终的数据分析结论不符合事实。</p>
-<p>2.黑客利用自己伪造的map函数对云架构实施攻击。</p>
-<p>3.一个伪造的Map节点被加入集群中，发生大量重复数据，并不断引入新的伪造map节点，对数据分析产生影响。</p>
-<p>针对以上所述的危险，需要从两个维度上保证mapreduce的安全；确保mapper的可信度和确保数据的可信性。确保mapper的可信度可以从建立信任来实现。建立信任包括两个步骤：一是建立初始行信任；二是在初始认证后，周期性检查每个worker节点的安全属性和与预先确定的安全策略是否一致。</p>
-<p>确保数据可信度可以通过访问控制来实现。</p>
-<p>hadoop提供了两种安全机制：simple和Kerberos</p>
-<p>下面以Hadoop中的安全配置为例，说明mapreduce的安全测评过程<br>。</p>
-<p>1.检查身份认证和授权配置</p>
-<p>2.检查调度器配置</p>
-<p>3.检查作业队列权限配置</p>
-<p>4.检查DFS permission配置</p>
-<h5 id="非关系型数据库的安全测评"><a href="#非关系型数据库的安全测评" class="headerlink" title="非关系型数据库的安全测评"></a>非关系型数据库的安全测评</h5><p>针对NoSQL数据库，HBase</p>
-<p>1.检查身份认证配置</p>
-<p>2.检查接口调用的安全配置</p>
-<p>3.检查访问控制</p>
-<h4 id="5-4-数据的安全测评"><a href="#5-4-数据的安全测评" class="headerlink" title="5.4 数据的安全测评"></a>5.4 数据的安全测评</h4><h5 id="5-4-1数据来源的安全测评"><a href="#5-4-1数据来源的安全测评" class="headerlink" title="5.4.1数据来源的安全测评"></a>5.4.1数据来源的安全测评</h5><p>1.恶意数据输入的预防机制及其测评</p>
-<p>2.基于数据源技术的数据可信度评估</p>
-<h5 id="5-4-2隐私保护程度的测评"><a href="#5-4-2隐私保护程度的测评" class="headerlink" title="5.4.2隐私保护程度的测评"></a>5.4.2隐私保护程度的测评</h5><p>1.数据去隐私处理效果的测评</p>
-<p>2.访问控制机制的测评</p>
-<p>3.对计算结果隐私程度的测评</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1358,7 +1219,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-count">13</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

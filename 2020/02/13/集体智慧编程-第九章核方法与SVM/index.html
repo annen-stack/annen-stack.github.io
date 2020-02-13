@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://annen-stack.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="为约会网站的用户寻找配对；数据包含数值型、名词性和大量的非线性关系。 123456789101112class matchrow：    def __init__(self,row,allnum&#x3D;False):        if allnum:           self.data&#x3D;[float(row[i]) for i in range(len(row)-1)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="集体智慧编程_第九章核方法与SVM">
+<meta property="og:url" content="https://annen-stack.github.io/2020/02/13/%E9%9B%86%E4%BD%93%E6%99%BA%E6%85%A7%E7%BC%96%E7%A8%8B-%E7%AC%AC%E4%B9%9D%E7%AB%A0%E6%A0%B8%E6%96%B9%E6%B3%95%E4%B8%8ESVM/index.html">
+<meta property="og:site_name" content="annen&#39;s blog">
+<meta property="og:description" content="为约会网站的用户寻找配对；数据包含数值型、名词性和大量的非线性关系。 123456789101112class matchrow：    def __init__(self,row,allnum&#x3D;False):        if allnum:           self.data&#x3D;[float(row[i]) for i in range(len(row)-1)">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://annen-stack.github.io/2020/02/13/%E9%9B%86%E4%BD%93%E6%99%BA%E6%85%A7%E7%BC%96%E7%A8%8B-%E7%AC%AC%E4%B9%9D%E7%AB%A0%E6%A0%B8%E6%96%B9%E6%B3%95%E4%B8%8ESVM/C1343EB5CB5D470ABFC26C3D334CCC9B">
+<meta property="article:published_time" content="2020-02-13T09:39:21.000Z">
+<meta property="article:modified_time" content="2020-02-13T09:40:14.542Z">
+<meta property="article:author" content="ah">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://annen-stack.github.io/2020/02/13/%E9%9B%86%E4%BD%93%E6%99%BA%E6%85%A7%E7%BC%96%E7%A8%8B-%E7%AC%AC%E4%B9%9D%E7%AB%A0%E6%A0%B8%E6%96%B9%E6%B3%95%E4%B8%8ESVM/C1343EB5CB5D470ABFC26C3D334CCC9B">
+
+<link rel="canonical" href="https://annen-stack.github.io/2020/02/13/%E9%9B%86%E4%BD%93%E6%99%BA%E6%85%A7%E7%BC%96%E7%A8%8B-%E7%AC%AC%E4%B9%9D%E7%AB%A0%E6%A0%B8%E6%96%B9%E6%B3%95%E4%B8%8ESVM/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>集体智慧编程_第九章核方法与SVM | annen's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">annen's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://annen-stack.github.io/2020/02/13/%E9%9B%86%E4%BD%93%E6%99%BA%E6%85%A7%E7%BC%96%E7%A8%8B-%E7%AC%AC%E4%B9%9D%E7%AB%A0%E6%A0%B8%E6%96%B9%E6%B3%95%E4%B8%8ESVM/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ah">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="annen's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          集体智慧编程_第九章核方法与SVM
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-02-13 17:39:21 / 修改时间：17:40:14" itemprop="dateCreated datePublished" datetime="2020-02-13T17:39:21+08:00">2020-02-13</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>为约会网站的用户寻找配对；数据包含数值型、名词性和大量的非线性关系。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">class matchrow：</span><br><span class="line">    def __init__(self,row,allnum&#x3D;False):</span><br><span class="line">        if allnum:</span><br><span class="line">           self.data&#x3D;[float(row[i]) for i in range(len(row)-1)</span><br><span class="line">        else:</span><br><span class="line">           self.data&#x3D;row[0:len(data)-1]</span><br><span class="line">        self.match&#x3D;int(row[len(row)-1]))</span><br><span class="line">    def loadmatch(f,allnum&#x3D;False):</span><br><span class="line">        rows&#x3D;[]</span><br><span class="line">        for line in file(f):</span><br><span class="line">            rows.append(matchrow(line.split(&#39;,&#39;),allnum))</span><br><span class="line">        return rows</span><br></pre></td></tr></table></figure>
+<h4 id="基本的线性分类"><a href="#基本的线性分类" class="headerlink" title="基本的线性分类"></a>基本的线性分类</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">def lineartrain(rows):</span><br><span class="line">    averages&#x3D;&#123;&#125;</span><br><span class="line">    counts&#x3D;&#123;&#125;</span><br><span class="line">    for row in rows:</span><br><span class="line">        c1&#x3D;row.match</span><br><span class="line">        averages.setdefault(c1,[0.0]*(len(row.data)))</span><br><span class="line">        counts,setdefault(c1,0)</span><br><span class="line">        for i in range(len(row.data)):</span><br><span class="line">           averages[c1][i]&#x3D;float(row.data[i])</span><br><span class="line">        counts[c1]+&#x3D;1</span><br><span class="line">    for c1,avg in averages.items():</span><br><span class="line">        for i in range(len(avg)):</span><br><span class="line">            avg[i]&#x3D;avg[i]&#x2F;counts[c1]</span><br><span class="line">    return averages</span><br><span class="line">    确定匹配和不匹配状态下的数据的平均值，显示在图上。</span><br></pre></td></tr></table></figure>
+<p>点积。class=sign((x-(m0+m1)/2)*(m0-m1)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">def dotproduct(v1,v2):</span><br><span class="line">    return sum([v1[i]*v2[i] for i in range(len(v1))])</span><br><span class="line">    </span><br><span class="line">def dpclassify(point,avgs):</span><br><span class="line">    b&#x3D;(dotproduct(avgs[1],avgs[1])-dotproduct(avgs[0],avgs[0]))&#x2F;2</span><br><span class="line">    y&#x3D;dotproduct(point,avgs[0])-dotproduct(point,avgs[1])+b</span><br><span class="line">    if y&gt;0: return 0</span><br><span class="line">    else: return 1</span><br></pre></td></tr></table></figure>
+<h4 id="分类特征"><a href="#分类特征" class="headerlink" title="分类特征"></a>分类特征</h4><p>将数据转化为数值型。<br>例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">def yesno(v):</span><br><span class="line">    if v&#x3D;&#x3D;&#39;yes&#39;: return 1</span><br><span class="line">    elif v&#x3D;&#x3D;&#39;no&#39;:return -1</span><br><span class="line">    else: return 0</span><br></pre></td></tr></table></figure>
+<h4 id="兴趣列表"><a href="#兴趣列表" class="headerlink" title="兴趣列表"></a>兴趣列表</h4><p>统计具有相同的兴趣个数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">def matchcount(interest1,interest2):</span><br><span class="line">    l1&#x3D;interest1.split(&#39;:&#39;)</span><br><span class="line">    l2&#x3D;interest2.split(&#39;:&#39;)</span><br><span class="line">    x&#x3D;0</span><br><span class="line">    for v in l1:</span><br><span class="line">        if v in l2:</span><br><span class="line">           x+&#x3D;1</span><br><span class="line">    return x</span><br></pre></td></tr></table></figure>
+<h4 id="利用Yahoo-Maps来确定距离"><a href="#利用Yahoo-Maps来确定距离" class="headerlink" title="利用Yahoo! Maps来确定距离"></a>利用Yahoo! Maps来确定距离</h4><p>略</p>
+<h4 id="构造新的数据集"><a href="#构造新的数据集" class="headerlink" title="构造新的数据集"></a>构造新的数据集</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">def loadnumerical():</span><br><span class="line">    oldrows&#x3D;loadmatch(&#39;matchmaker.csv&#39;)</span><br><span class="line">    newrows&#x3D;[]</span><br><span class="line">    for row in oldrows:</span><br><span class="line">       d&#x3D;row.data</span><br><span class="line">       data&#x3D;[float(d[0]),yesno(d[1]),yesno(d[2]),float(d[5]),yesno(d[6]),yesno(d[7]),matchcount(d[3],d[8]),milesdistance(d[4],d[9]),</span><br><span class="line">       row.match]</span><br><span class="line">       newrows.append(matchrow(data))</span><br><span class="line">    return newrows</span><br></pre></td></tr></table></figure>
+<h4 id="对数据进行缩放处理"><a href="#对数据进行缩放处理" class="headerlink" title="对数据进行缩放处理"></a>对数据进行缩放处理</h4><p>将所有数据转化为0-1之间的值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">def scaledata(rows):</span><br><span class="line">   low&#x3D;[99999999]*len(rows[0].data)</span><br><span class="line">   high&#x3D;[-9999999]*len(rows[0].data)</span><br><span class="line">   for row in rows:</span><br><span class="line">      d&#x3D;row.data</span><br><span class="line">      for i in range(len(d)):</span><br><span class="line">         if d[i]&lt;low[i]: low[i]&#x3D;d[i]</span><br><span class="line">         if d[i]&gt;high[i]: high[i]&#x3D;d[i]</span><br><span class="line">  def scaleinput(d):</span><br><span class="line">    return     [(d.data[i]-low[i])&#x2F;(high[i]-low[i])       </span><br><span class="line">    for i in range(len(low))]</span><br><span class="line">  newrows&#x3D;[matchrow(scaleinput(row.data)+[row.match]) for row in rows]</span><br><span class="line">  </span><br><span class="line">  return newrows,scaleinput</span><br></pre></td></tr></table></figure>
+<h4 id="理解核方法"><a href="#理解核方法" class="headerlink" title="理解核方法"></a>理解核方法</h4><p>我们可以预先的坐标点进行变换，构造一个用一条直线就可以进行划分的新数据集。</p>
+<h5 id="核技法"><a href="#核技法" class="headerlink" title="核技法"></a>核技法</h5><p>用一个新的函数来取代原来的点积函数，当借助某个映射函数将数据第一次变换到更高纬度的坐标空间时，新函数将会返回高纬度坐标空间的点积结果。————径向基函数。是非线性的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">def rbf(v1,v2,gamma&#x3D;20):</span><br><span class="line">    dv&#x3D;[v1[i]-v2[i] for i in range(len(v1))]</span><br><span class="line">    l&#x3D;veclength(dv)</span><br><span class="line">    return math.e**(-gamma*l)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">def getoffset(rows,gamma&#x3D;10):</span><br><span class="line">略</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">def nlclassify(point,rows,offset,gamma&#x3D;10)</span><br><span class="line">    sum0&#x3D;0</span><br><span class="line">    sum1&#x3D;0</span><br><span class="line">    count1&#x3D;0</span><br><span class="line">    count0&#x3D;0</span><br><span class="line">    for row in rows:</span><br><span class="line">        if row.match&#x3D;&#x3D;0:</span><br><span class="line">             sum0+&#x3D;rbf(point,row.data,gamma)</span><br><span class="line">             count0+&#x3D;1</span><br><span class="line">        else:</span><br><span class="line">             sum1+&#x3D;rbf(point,row.data,gamma)</span><br><span class="line">             count1+&#x3D;1</span><br><span class="line">    y&#x3D;(1&#x2F;count0)*sum0-(1&#x2F;count1)*sum1+offset</span><br><span class="line">    </span><br><span class="line">    if y&lt;0:return 0</span><br><span class="line">    else return 1 #将经过处理的数据进行判别(dpclassify)</span><br></pre></td></tr></table></figure>
+
+<h4 id="支持向量机"><a href="#支持向量机" class="headerlink" title="支持向量机"></a>支持向量机</h4><p><img src="C1343EB5CB5D470ABFC26C3D334CCC9B" alt="image"></p>
+<p>我们引入一个LIBSVM的开源库，它能够对SVM模型进行训练、给出预测。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">from svm import *</span><br><span class="line">prob&#x3D;svm_problem([1,-1],[[1,0,1],[-1,0,-1]])</span><br><span class="line">param&#x3D;svm_parameter(kernel_type&#x3D;LINEAR,C&#x3D;10)</span><br><span class="line">#训练</span><br><span class="line">m&#x3D;svm_model(prob,param)</span><br><span class="line">#预测</span><br><span class="line">m.predice([1,1,1])</span><br></pre></td></tr></table></figure>
+<h5 id="用SVM用于婚介数据集-系统自带的函数"><a href="#用SVM用于婚介数据集-系统自带的函数" class="headerlink" title="用SVM用于婚介数据集,系统自带的函数"></a>用SVM用于婚介数据集,系统自带的函数</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">answers,inputs&#x3D;[r.match for r in scaledset],[r.data for r in scaledset]</span><br><span class="line">param&#x3D;svm_parameter(kernel_type&#x3D;RBF)</span><br><span class="line">prob&#x3D;svm_problem(answers,inputs)</span><br><span class="line">m&#x3D;svm_model(prob,param)</span><br><span class="line"></span><br><span class="line">m.predict(scalef(newrow))</span><br><span class="line">#利用交叉验证函数来检验模型的质量...</span><br><span class="line">g&#x3D;cross_validation(prob,param,4)</span><br><span class="line">n&#x3D;sum([abs(answers[i]-g[i]) for i in range(len(g))</span><br></pre></td></tr></table></figure>
+<p>若n=116,由于初始集为500，则得到了384项正确匹配。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/02/10/%E9%9B%86%E4%BD%93%E6%99%BA%E6%85%A7%E7%BC%96%E7%A8%8B-%E7%AC%AC%E4%B8%83%E7%AB%A0%E5%86%B3%E7%AD%96%E6%A0%91%E5%BB%BA%E6%A8%A1/" rel="prev" title="集体智慧编程_第七章决策树建模">
+      <i class="fa fa-chevron-left"></i> 集体智慧编程_第七章决策树建模
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#基本的线性分类"><span class="nav-number">1.</span> <span class="nav-text">基本的线性分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分类特征"><span class="nav-number">2.</span> <span class="nav-text">分类特征</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#兴趣列表"><span class="nav-number">3.</span> <span class="nav-text">兴趣列表</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#利用Yahoo-Maps来确定距离"><span class="nav-number">4.</span> <span class="nav-text">利用Yahoo! Maps来确定距离</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#构造新的数据集"><span class="nav-number">5.</span> <span class="nav-text">构造新的数据集</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#对数据进行缩放处理"><span class="nav-number">6.</span> <span class="nav-text">对数据进行缩放处理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#理解核方法"><span class="nav-number">7.</span> <span class="nav-text">理解核方法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#核技法"><span class="nav-number">7.1.</span> <span class="nav-text">核技法</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#支持向量机"><span class="nav-number">8.</span> <span class="nav-text">支持向量机</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#用SVM用于婚介数据集-系统自带的函数"><span class="nav-number">8.1.</span> <span class="nav-text">用SVM用于婚介数据集,系统自带的函数</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">ah</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ah</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
