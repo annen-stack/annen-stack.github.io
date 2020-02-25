@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('https://annen-stack.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="以hadoop为代表的各种大数据框架不断涌现，这些数据处理框架方便了大数据应用的编写，但是由于数据来源的多样性、数据形式的多元化，使得数据质量存在较大的差异，不正确或者不一致的数据可能严重影响分析效果。  1.概述大数据处理流程一般如下：使用相关工具对分布广泛的非结构化的数据源进行抽取和集成，采用合适的标准对结果进行统一存储，利用数据分析的相关技术分析存储的数据，从所存储的数据中选择有用的内容并">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面向大数据框架的测评">
+<meta property="og:url" content="https://annen-stack.github.io/2020/02/25/%E9%9D%A2%E5%90%91%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%A1%86%E6%9E%B6%E7%9A%84%E6%B5%8B%E8%AF%84/index.html">
+<meta property="og:site_name" content="annen&#39;s blog">
+<meta property="og:description" content="以hadoop为代表的各种大数据框架不断涌现，这些数据处理框架方便了大数据应用的编写，但是由于数据来源的多样性、数据形式的多元化，使得数据质量存在较大的差异，不正确或者不一致的数据可能严重影响分析效果。  1.概述大数据处理流程一般如下：使用相关工具对分布广泛的非结构化的数据源进行抽取和集成，采用合适的标准对结果进行统一存储，利用数据分析的相关技术分析存储的数据，从所存储的数据中选择有用的内容并">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200225135340273.JPG?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3MzU2ODU0,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200225173431439.JPG?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3MzU2ODU0,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200225191534274.JPG">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/2020022519221662.JPG">
+<meta property="article:published_time" content="2020-02-25T12:50:12.000Z">
+<meta property="article:modified_time" content="2020-02-25T12:52:12.489Z">
+<meta property="article:author" content="ah">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20200225135340273.JPG?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3MzU2ODU0,size_16,color_FFFFFF,t_70">
+
+<link rel="canonical" href="https://annen-stack.github.io/2020/02/25/%E9%9D%A2%E5%90%91%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%A1%86%E6%9E%B6%E7%9A%84%E6%B5%8B%E8%AF%84/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>面向大数据框架的测评 | annen's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">annen's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://annen-stack.github.io/2020/02/25/%E9%9D%A2%E5%90%91%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%A1%86%E6%9E%B6%E7%9A%84%E6%B5%8B%E8%AF%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ah">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="annen's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          面向大数据框架的测评
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-02-25 20:50:12 / 修改时间：20:52:12" itemprop="dateCreated datePublished" datetime="2020-02-25T20:50:12+08:00">2020-02-25</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>以hadoop为代表的各种大数据框架不断涌现，这些数据处理框架方便了大数据应用的编写，但是由于数据来源的多样性、数据形式的多元化，使得数据质量存在较大的差异，不正确或者不一致的数据可能严重影响分析效果。</p>
+</blockquote>
+<h3 id="1-概述"><a href="#1-概述" class="headerlink" title="1.概述"></a>1.概述</h3><p>大数据处理流程一般如下：使用相关工具对分布广泛的非结构化的数据源进行抽取和集成，采用合适的标准对结果进行统一存储，利用数据分析的相关技术分析存储的数据，从所存储的数据中选择有用的内容并通过恰当的方式提供给大数据应用。<br><img src="https://img-blog.csdnimg.cn/20200225135340273.JPG?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3MzU2ODU0,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>在处理大数据之前需要对来自不同数据源的数据做数据处理，包括数据抽取和数据集成。通过数据集成和数据抽取操作提取关系和实体，对其进行关联和聚类的相关操作后，采用统一定义的结构来存储这些数据。数据清洗发生在数据集成操作和数据抽取操作之前进行，保证数据质量和可行性。</p>
+<p><strong>数据处理的核心部分包括数据抽取、数据集成以及数据清洗</strong>数据抽取的相关研究在传统的数据库领域已经较为成熟，并且数据集成的相关方法也随新数据源的涌现而不断发展。目前数据抽取与集成的方式可以分为以下四种类型：基于物化或ETL方法引擎、基于数据流方法引擎以及基于搜索引擎的方法。数据清洗是指通过一定的规则将脏数据洗掉，规则包括检查数据一致性、处理无效性和缺失值等。</p>
+<h3 id="2-面向数据质量的测评"><a href="#2-面向数据质量的测评" class="headerlink" title="2.面向数据质量的测评"></a>2.面向数据质量的测评</h3><h4 id="2-1数据质量"><a href="#2-1数据质量" class="headerlink" title="2.1数据质量"></a>2.1数据质量</h4><p>1)数据质量的定义<br>数据质量包括数据本身质量和数据过程质量。</p>
+<ul>
+<li>数据真实性：数据真实并且准确地反映实际业务。</li>
+<li>数据完备性：数据充分，没有遗漏任何有关的操作数据。</li>
+<li>数据自治性：数据不是孤立存在的而是通过不同的约束互相关联，在满足数据之间关联关系的同时不违反相关的规定。</li>
+<li>数据的使用质量：数据被正确的使用。</li>
+<li>数据存储质量：数据被安全地存储在合适的介质中。</li>
+<li>数据传输质量：在传输过程中数据传输地效率以及数据正确性。</li>
+</ul>
+<p>2)数据质量问题的分类</p>
+<p><img src="https://img-blog.csdnimg.cn/20200225173431439.JPG?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3MzU2ODU0,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>很多单数据源诸如文件、web数据等，缺乏数据模式和统一的数据规范，因而更容易发生错误或者不一致问题。实例层问题在模式层次上是不可见的，无法通过改进模式来避免问题产生。多数据源的数据质量问题比单数据源更加复杂。</p>
+<p>3)数据质量控制方法及实现<br>从对数据仓库自身数据的监控到对数据形成过程的管理，数据仓库中用于数据质量控制的方法有很多。数据质量逐渐与企业业绩和价值挂钩，企业应当采取合适的方法来评估其数据质量的能力和成熟度，因此提出了数据质量成熟度模型的评估理论。</p>
+<h4 id="2-2数据预处理"><a href="#2-2数据预处理" class="headerlink" title="2.2数据预处理"></a>2.2数据预处理</h4><p>1)数据清洗</p>
+<p>数据清洗将脏数据转化为满足数据质量要求的数据。数据清洗所处理的主要问题有：空缺值、错误数据、孤立点和噪声。</p>
+<p>通常不符合要求的数据有三类：</p>
+<p>(1)数据缺失：</p>
+<p>数据缺失一般包括两种情况：数据中拥有大量缺失值的属性以及数据重要属性存在少量的缺失值。对于前者可以采用删除的操作来去除缺失的属性；对于后者而言，需要采用数据补充的方法将数据补充完整后再进行数据挖掘操作。</p>
+<p>在数据清洗中，对于不完整的数据特征采用两种填补方案：用相同的常数去替换缺失的属性值；用该属性最有可能值填补缺失值。</p>
+<p>(2)数据错误：</p>
+<p>当业务系统不够健全时，容易产生数据错误。</p>
+<p>(3)数据重复：</p>
+<p>当出现数据重复的情况时，用户可以将重复的数据字段导出来确认并且整理。MapReduce可以实现数据去重。利用Map将需要去重的数据作为一个&lt;key,value&gt;值，经过shuffle后输入到reduce中并利用值key的唯一性直接输出值。核心代码略。</p>
+<p>2)数据集成/数据变换</p>
+<p>数据集成是指从逻辑上或者物理上将来源、格式以及特点性质不同的数据有机的集中起来，为数据挖掘提供比较完整的数据源。</p>
+<table>
+<thead>
+<tr>
+<th>问题类型</th>
+<th>问题描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数据表链接不匹配</td>
+<td>来自多个数据源中的数据表需要通过相同的主键连接。</td>
+</tr>
+<tr>
+<td>冗余</td>
+<td>在连接数据表的过程中，没有对表中的字段严格选择后就连接，造成大量的冗余</td>
+</tr>
+<tr>
+<td>数据值冲突</td>
+<td>不同数据源中的不同属性值导致数据表连接字段的类型出现重复</td>
+</tr>
+</tbody></table>
+<p>数据集成代码略</p>
+<p>数据变换是数据清洗过程中重要一步，是对数据的标准化处理。通常数据变换需要处理的内容如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th>数据分类</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>属性的数据类型</td>
+<td>当属性之间的取值范围相差大时，要进行数据的映射处理。当属性的取值类型较小时，分析数据的分布频率，然后进行数据转换，将其中字符型数据转化为枚举型</td>
+</tr>
+<tr>
+<td>数据离散化</td>
+<td>将连续取值的属性离散化成若干区间，来帮助消减一个连续属性的个数</td>
+</tr>
+<tr>
+<td>数据标准化</td>
+<td>不同来源得到的相同字段定义可能不一样</td>
+</tr>
+</tbody></table>
+<p>3)数据规约</p>
+<p>可以获得数据集的简化表示。</p>
+<p>(1)属性选择 </p>
+<p>根据用户的指标选择一个优化属性子集的过程。优化属性子集可以是属性数目最小的子集，也可以是含有最佳预测准确率的子集。包括属性评估方法和搜索方法。</p>
+<p>(2)实例选择</p>
+<p>实例选择是使用部分数据记录代替原来所有的数据记录进行数据挖掘，减小挖掘时间和降低挖掘资源的代价，获得更高效的挖掘性能。<strong>主要通过采样数据集实现</strong>，包括简单随机采样、等级采样等。</p>
+<h4 id="2-3数据质量测评"><a href="#2-3数据质量测评" class="headerlink" title="2.3数据质量测评"></a>2.3数据质量测评</h4><p>1)数据清洗框架和工具</p>
+<p>文献提出了数据清洗的框架，该框架将逻辑规范层与物理实现层分离开来，并围绕该框架提出了数据清洗的模型和语言。AJAX模型是逻辑层面的模型，将数据清洗分为映射、匹配、聚集、合并、跟踪五个过程。</p>
+<p>常用的数据清洗工具如下：</p>
+<table>
+<thead>
+<tr>
+<th>工具名称</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DATASTAGE</td>
+<td>针对系统的各个环节可能出现的数据二义性、重复、不完整、违法业务规则等问题，允许通过抽取，将有问题的记录删除，再根据实际情况来调整相应的清洗操作</td>
+</tr>
+<tr>
+<td>Visual Warehousing</td>
+<td>IBM公司推出的一个创建和维护数据仓库的集成工具，可以定义、创建、管理、监控和维护数据仓库</td>
+</tr>
+<tr>
+<td>DTS</td>
+<td>提供数据输入/输出和自动调度功能，在数据传输过程中完成数据的验证、清洗和转换等操作</td>
+</tr>
+</tbody></table>
+<p>银行数据仓库中的数据清洗的流程如下所示：</p>
+<p><img src="https://img-blog.csdnimg.cn/20200225191534274.JPG" alt="在这里插入图片描述"></p>
+<p>逻辑规范：<br><img src="https://img-blog.csdnimg.cn/2020022519221662.JPG" alt="在这里插入图片描述"></p>
+<p>2)数据清洗评估</p>
+<p>通常会参照高质量的数据特征来分析数据质量是否合格，一般通过以下几方面评价数据质量。</p>
+<p>(1)相关性<br>数据质量的一个关键目标是信息是否满足客户的要求。</p>
+<p>(2)准确性<br>准确的信息能反映基本现实，并且高质量信息应该是准确的。</p>
+<p>(3)及时性<br>及时性是指没有延误的信息。<br>等等</p>
+<h3 id="3-分布式数据模型及测试"><a href="#3-分布式数据模型及测试" class="headerlink" title="3.分布式数据模型及测试"></a>3.分布式数据模型及测试</h3><h4 id="3-1-框架"><a href="#3-1-框架" class="headerlink" title="3.1 框架"></a>3.1 框架</h4><p>hadoop是最著名的大数据处理框架之一，它以可靠、高效、可伸缩方式进行大数据的储存、处理和分析。用户在开发分布式大数据处理程序时，无需了解分布式底层细节，就可以利用大规模集群进行告诉计算与存储。</p>
+<p>Hadoop具有如下几个方面的特征：扩容能力、成本低、高效率、可靠性。</p>
+<p>Hadoop的核心是HDFS与mapreduce，为用户提供了系统底层透明的分布式基础框架。</p>
+<h4 id="3-2数据模型"><a href="#3-2数据模型" class="headerlink" title="3.2数据模型"></a>3.2数据模型</h4><p>mapreduce能在整个集群上执行map和reduce任务并报告结果。HDFS通过定义来支持大型文件，并且提供了一种支持跨节点复制数据以进行处理的存储模式。</p>
+<p>mapreduce采用主/从架构，主要包括:client、jobtracker、tasktracker。mapreduce先对用户提交的数据进行分块，然后交给不同的Map任务处理。</p>
+<p>略</p>
+<h4 id="3-3单元测试"><a href="#3-3单元测试" class="headerlink" title="3.3单元测试"></a>3.3单元测试</h4><p>MapReduce封装了大量的基础功能，方便用户编程，但给MapReduce的单元测试带来很大挑战。<br>MRUnit是针对MapReduce的单元测试框架，<strong>其基本原理是JUnit4与EasyMock,MRUnit结果简单，依赖于JUnit的单元测试，通过实现Mock对象控制outputcollector操作并且拦截该输出，对比期望结果以达到自动断言的目的。</strong></p>
+<p>针对不同的测试对象，MRUnit使用以下几种Driver:</p>
+<ul>
+<li>MapDriver   测试单独的Map</li>
+<li>ReduceDriver  测试单独的Reduce</li>
+<li>MapReduce Driver 将Map与Reduce结合起来测试</li>
+<li>PipelineMapReduceDriver 将多个Map-Reduce pair结合起来测试</li>
+</ul>
+<p>从Apache下载MRUnit最新版的jar包，并将jar包添加到hadoop的IDE Classpath 路径中。<br>假设通过MR分析一个电话记录。</p>
+<p>其中Mapper代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">public class SMSCDRMapper extends Mapper&lt;LongWritable,Text,Text,IntWritable&gt;</span><br><span class="line">&#123;</span><br><span class="line">    private Text status &#x3D; new Text();</span><br><span class="line">    private final static IntWritable addOne&#x3D; new IntWritable(1);</span><br><span class="line">    protected void map(LongWritable key, Text value, Context context)</span><br><span class="line">        throws java.io.IOEXception, InterruptedException&#123;</span><br><span class="line">            String[] line&#x3D;value.toString().split(&quot;;&quot;);</span><br><span class="line">            if(Integer.parseInt(line[1])&#x3D;&#x3D;1)&#123;</span><br><span class="line">                status.set(line[4]);</span><br><span class="line">                context.write(status,addOne);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Reducer代码如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">public class SMSCDRReducer extends Reducer&lt;Text,IntWritable,Text,IntWritable&gt;</span><br><span class="line">&#123;</span><br><span class="line">    protected void reduce(Text key, Iterable&lt;IntWritable&gt;values, Context context)</span><br><span class="line">        throws java.io.IOEXception, InterruptedException&#123;</span><br><span class="line">               int sum&#x3D;0;</span><br><span class="line">               for (IntWritable value:values)</span><br><span class="line">               &#123;</span><br><span class="line">                   sum+&#x3D;value,get();</span><br><span class="line">               &#125;</span><br><span class="line">                context.write(status,new IntWritable(sum));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>针对以上的Map，可以编写相关的测试代码，通过withInput模拟输入一行，其对的期望为输出(withOutput)。如果输入的数据经过map计算之后为期望的结果：SMS Status Code为5，CDRType为1，则测试通过。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public class SMSCDRMapperTest&#123;</span><br><span class="line">    MapDriver&lt;LongWritable,Text,Text,IntWritable&gt;mapDriver; </span><br><span class="line">  </span><br><span class="line">    @Before</span><br><span class="line">       public void setUp()&#123;</span><br><span class="line">           SMSCDRMapper mapper &#x3D; new SMSCDRMapper();</span><br><span class="line"></span><br><span class="line">           mapDriver &#x3D; MapDriver.newMapDriver(mapper);</span><br><span class="line">       &#125;</span><br><span class="line">   @Test</span><br><span class="line">       public void testMapper()&#123;</span><br><span class="line">                mapDriver.withInput(new LongWritable(),new Text(&quot;5975877;1;756222541;552687123358;5&quot;));</span><br><span class="line">               mapDriver.withOutput(new Text(&quot;5&quot;),new IntWritable(1));</span><br><span class="line">              </span><br><span class="line">               mapDriver.runTest();</span><br><span class="line">       &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ReduceDriver针对Reduce的单独测试。略</p>
+<p>以下为Map和Reduce测试的例子。模拟两条记录的输入：</p>
+<p>“595877;1;7585458855;4441417;5”</p>
+<p>“735856;1;5498749558;8478941;3”</p>
+<p>期望的输出为</p>
+<p>5，1</p>
+<p>3，1</p>
+<p>相关代码为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">public class SMSCDRMapperReducerTest&#123;</span><br><span class="line">    MapDriver&lt;LongWritable,Text,Text,IntWritable&gt;mapDriver; </span><br><span class="line">    ReduceDriver&lt;Text,IntWritable,Text,IntWritable&gt;reduceDriver;</span><br><span class="line">    MapReduceDriver&lt;LongWritable,Text,Text,IntWritable,Text,IntWritable&gt;mapReduceDriver;</span><br><span class="line">    @Before</span><br><span class="line">       public void setUp()&#123;</span><br><span class="line">           SMSCDRMapper mapper &#x3D; new SMSCDRMapper();</span><br><span class="line">           SMSCDReducer reducer &#x3D; new SMSCDRReducer();</span><br><span class="line">           mapReduceDriver &#x3D; MapReduceDriver.newMapReduceDriver(mapper,reducer);</span><br><span class="line">       &#125;</span><br><span class="line">   @Text    </span><br><span class="line">       public void testMapReduce()&#123;</span><br><span class="line">               Text mapInputValue1 &#x3D; new Text(&quot;595877;1;7585458855;4441417;5&quot;)</span><br><span class="line">               Text mapInputValue2 &#x3D; new Text(&quot;735856;1;5498749558;8478941;3&quot;)</span><br><span class="line">               mapReduceDriver.withInput(new LongWritable(1),mapInputValue1);</span><br><span class="line">               mapReduceDriver.withInput(new LongWritable(1),mapInputValue2);</span><br><span class="line">               mapReduceDriver.addOutput(new Text(&quot;5&quot;),new IntWritable(1));</span><br><span class="line">               mapReduceDriver.addOutput(new Text(&quot;3&quot;),new IntWritable(1));</span><br><span class="line">               maReduceDriver.runTest();</span><br><span class="line">       &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4大数据的基准测试"><a href="#4大数据的基准测试" class="headerlink" title="4大数据的基准测试"></a>4大数据的基准测试</h3><p><strong>基准测试是一种测量和评估软件性能指标的典型活动。可以在某个时刻通过基准测试建立一个已知的性能水平，当系统的软硬件环境发生变化后再进行一次基准测试，以确定那些变化对性能的影响。</strong></p>
+<h4 id="4-1测试方法"><a href="#4-1测试方法" class="headerlink" title="4.1测试方法"></a>4.1测试方法</h4><p>1）测试步骤</p>
+<p>通常是在系统上运行一系列的测试程序，并把性能计数器的结果保存起来，这些结果称为“性能指标”,可以让有经验的专业人员对系统过去和现在的性能表现进行对照比较，确定系统或环境的所有变化。</p>
+<p>2）测试工具集</p>
+<p>包括工业界、科研界提出的测试工具集和大数据提供的测试基准。</p>
+<p>具体包括：</p>
+<p>1.BigBench</p>
+<p>2.<strong>hadoop自带的测试基准</strong>，这些程序可以从多个角度对Hadoop进行测试，TestDFSIO,mrbench和nnbench是三个广泛使用的测试。</p>
+<p>TestDFSIO用于测试HDFS的IO性能。</p>
+<p>nnbench用于测试NameNode负载。</p>
+<p>mrbench会多次重复执行一个小作业，用于检查在机群上小作业的运行是否可以重复以及运行是否高效。</p>
+<p>3.HBase系统本身提供了性能测试工具。</p>
+<p>3）数据准备</p>
+<p><strong>数据发生器是大数据基准中很重要的工具。数据基准测试中常用的数据生成工具包括HiBench与BDGS。</strong></p>
+<p>HiBench的容量是扩展的，可以生成非结构的文本数据类型并支持hadoop hive。BDGS在保留原始数据特性的基础上以小规模的真实数据生成大规模的数据。</p>
+<p>并行数据生成框架(PDGF)是一种适应性很强的数据生成工具，可以在短时间内生成大量的关系数据。PDGF利用并行随机数发生器来生成独立的相关值。其中间过程和转换的最终结果是可以计算的，其基本关系库模型也使得它可以在数据上产生一致性查询。</p>
+<h4 id="4-2测试内容"><a href="#4-2测试内容" class="headerlink" title="4.2测试内容"></a>4.2测试内容</h4><p>基准测试包括面对特定处理功能甚至应用的基准测试程序集的集合。<br>下面给出不同的测试工具集包括的测试内容：</p>
+<p>1.Big Data Bench from UC Berkeley</p>
+<p>2.BigDataBench</p>
+<p>BigDataBench是一个抽取INTERNET典型服务构建的大数据基准测试程序集。<br>3.Hibench基准测试</p>
+<p>4.Hadoop基准测试</p>
+<p>Hadoop自带了几个基准测试，打包在jar包中，如Hadoop-<em>test</em>.jar和Hadoop<em>examples</em>.jar。</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TestDFSIO</td>
+<td>测试HDFS的IO性能</td>
+</tr>
+<tr>
+<td>nnbench</td>
+<td>测试NameNode的负载</td>
+</tr>
+<tr>
+<td>mrbench</td>
+<td>多次重复执行一个小作业，检查运行是否可重复以及是否高效</td>
+</tr>
+</tbody></table>
+<ul>
+<li>TestDFSIO的测试步骤：</li>
+</ul>
+<p>用法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Usage: TestDFSIO[genericOptions]   -read|-write|-append|-clean[-nrFiles N]</span><br></pre></td></tr></table></figure>
+<p>命令行：例子将往HDFS中写入10个1000MB的文件： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hadoop jar $HADOOP_HOME&#x2F;hadoop - *test*.jar TestDFSIO -read -nrFiles 10  -fileSize 1000</span><br></pre></td></tr></table></figure>
+<p>使用命令行删除数据：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hadoop jar $HADOOP_HOME&#x2F;hadoop - *test*.jar TestDFSIO -clean</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>nnbench：用于测试NameNode的负载。</li>
+</ul>
+<p>它会生成很多与HDFRS相关的请求，给NameNode施加压力。这个测试能在HDFS上模拟创建、读取、重命名和删除文件等操作。</p>
+<p>例如，使用12个mapper和6个reducer来创建1000个文件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hadoop jar $HADOOP_HOME&#x2F;hadoop - *test*.jar nnbench\</span><br><span class="line">   -operation create_write -maps 12 -reduces 6 -blockSize 1\</span><br><span class="line">   -bytesToWrite 0 -numberOfFiles 1000 -replicationFactorPerFiles 3\</span><br><span class="line">   -readFileAfterOpen true -baseDir&#x2F;benchmarks&#x2F;NNBench - &#39;hostname -s&#39;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>mrbench会多次重复执行一个小作业，用于检查在机群上小作业的运行是否可以重复以及运行是否高效。</li>
+</ul>
+<p>例如，运行一个小作业50次。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hadoop jar $HADOOP_HOME&#x2F;hadoop - *test*.jar mrbench -numRuns 50</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Terasort是测试Hadoop的一个有效的排序程序。</li>
+</ul>
+<p>通过Hadoop自带的Terasort排序程序，测试不同的Map任务和Reduce任务数量，对hadoop性能的影响。</p>
+<p>一个完整的Terasort测试需要按三个步骤执行：</p>
+<p>(1).用TeraGen生成1GB的随机数据，并输入到目录/examples/terasort- input</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hadoop jar $HADOOP_HOME&#x2F;hadoop-examples-0.20.2-cdh3u3.jar teragen \</span><br><span class="line">    10000000&#x2F;examples&#x2F;terasort- input</span><br></pre></td></tr></table></figure>
+<p>(2).输入数据运行TeraSort对数据进行排序，并将结果输出到目录：examples/terasort- output</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hadoop jar $HADOOP_HOME&#x2F;hadoop-examples-0.20.2-cdh3u3.jar terasort \</span><br><span class="line">    examples&#x2F;terasort- input&#x2F;examples&#x2F;terasort- output</span><br></pre></td></tr></table></figure>
+<p>(3).用TeraValidate验证排好序的输出数据，如果有问题，将乱序的Key输出到目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hadoop jar $HADOOP_HOME&#x2F;hadoop-examples-0.20.2-cdh3u3.jar teravalidate \                            </span><br><span class="line">      examples&#x2F;terasort- input&#x2F;examples&#x2F;terasort- validate</span><br></pre></td></tr></table></figure>
+<p>5.微基准测试</p>
+<p>用hadoop对sort grep,wordcount进行微基准测试实例，包括数据生成和测试执行两步骤。</p>
+<p>6.关系查询</p>
+<p>针对数据库中的相关信息进行，基准测试主要包括：装载数据、查询准备和执行查询三个步骤。</p>
+<p>7.HBase</p>
+<p>HBase自带的测试主要步骤</p>
+<p>1）环境配置</p>
+<p>2）测试</p>
+<p>3）Bulk load对HBase测试</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/02/24/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95python/" rel="prev" title="数据结构与算法python">
+      <i class="fa fa-chevron-left"></i> 数据结构与算法python
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/02/25/%E5%88%A9%E7%94%A8python%E8%BF%9B%E8%A1%8C%E6%95%B0%E6%8D%AE%E6%B8%85%E7%90%86%EF%BC%88%E4%B8%8A%EF%BC%89/" rel="next" title="利用python进行数据清理（上）">
+      利用python进行数据清理（上） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-概述"><span class="nav-number">1.</span> <span class="nav-text">1.概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-面向数据质量的测评"><span class="nav-number">2.</span> <span class="nav-text">2.面向数据质量的测评</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1数据质量"><span class="nav-number">2.1.</span> <span class="nav-text">2.1数据质量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2数据预处理"><span class="nav-number">2.2.</span> <span class="nav-text">2.2数据预处理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3数据质量测评"><span class="nav-number">2.3.</span> <span class="nav-text">2.3数据质量测评</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-分布式数据模型及测试"><span class="nav-number">3.</span> <span class="nav-text">3.分布式数据模型及测试</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-框架"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 框架</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2数据模型"><span class="nav-number">3.2.</span> <span class="nav-text">3.2数据模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3单元测试"><span class="nav-number">3.3.</span> <span class="nav-text">3.3单元测试</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4大数据的基准测试"><span class="nav-number">4.</span> <span class="nav-text">4大数据的基准测试</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1测试方法"><span class="nav-number">4.1.</span> <span class="nav-text">4.1测试方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2测试内容"><span class="nav-number">4.2.</span> <span class="nav-text">4.2测试内容</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">ah</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ah</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
